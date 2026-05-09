@@ -1711,13 +1711,20 @@
       if (layout) layout.style.zoom = '1';
       await new Promise(r => requestAnimationFrame(r));
       console.log('[snap] rendering canvas...');
+      // 手機板:強制用桌機寬度截圖,讓媒體查詢重算成桌機版面
+      const isMobile = window.innerWidth <= 600;
+      const snapWidth = isMobile ? 1200 : target.scrollWidth;
+      // 高度給寬鬆一點,內容多時不會被截掉
+      const snapHeight = isMobile ? 1000 : target.scrollHeight;
       const canvas = await html2canvas(target, {
         backgroundColor: '#fafbfc',
         scale: 2,
         useCORS: true,
         logging: false,
-        windowWidth: target.scrollWidth,
-        windowHeight: target.scrollHeight,
+        windowWidth: snapWidth,
+        windowHeight: snapHeight,
+        width: snapWidth,
+        height: snapHeight,
       });
       if (layout) layout.style.zoom = originalZoom || '1.1';
       console.log('[snap] canvas done, size:', canvas.width, 'x', canvas.height);
