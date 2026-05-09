@@ -62,7 +62,7 @@
     max-width: 1280px;
     width: 100%;
     margin: 0 auto;
-    padding: 30px 18px;
+    padding: 12px 18px 30px;
     box-sizing: border-box;
     min-height: 100vh;
     display: flex;
@@ -205,8 +205,8 @@
   /* === 頂部標題 === */
   .header {
     text-align: center;
-    margin-bottom: 14px;
-    padding: 6px 0 12px;
+    margin-bottom: 8px;
+    padding: 0 0 10px;
     border-bottom: 1px solid var(--line-soft);
   }
   .header .ornament {
@@ -230,14 +230,14 @@
     font-family: var(--serif-en);
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(28px, 3.6vw, 40px);
+    font-size: clamp(22px, 2.9vw, 32px);
     color: var(--accent-strong);
     letter-spacing: 0.01em;
   }
   .header h1 .subtitle {
     font-family: var(--serif-tc);
     font-weight: 500;
-    font-size: 20px;
+    font-size: 16px;
     color: var(--accent-strong);
     letter-spacing: 0.4em;
   }
@@ -1004,8 +1004,8 @@
       gap: 8px;
       align-items: center;
     }
-    .header h1 .en { font-size: 32px; }
-    .header h1 .subtitle { font-size: 16px; padding-left: 0; letter-spacing: 0.4em; }
+    .header h1 .en { font-size: 26px; }
+    .header h1 .subtitle { font-size: 13px; padding-left: 0; letter-spacing: 0.4em; }
     .header { text-align: center; }
 
     /* 手機板姓名格子:讓字母均勻分布並能換行 */
@@ -1323,7 +1323,7 @@
       { ageRange: `${e2+1}-${e3}歲`, yearRange: `${y+e2+1}-${y+e3}` },
       { ageRange: `${e3+1}歲後`, yearRange: `${y+e3+1}+` }
     ];
-    // 「歲數」+ 高峰 stage 判定:都用「查詢年的歲數」
+    // 「實歲」+ 高峰 stage 判定:都用「查詢年的歲數」
     // 規則:把 TODAY 的月日投影到查詢年(即 fy 年的 5/9 那一刻),看人幾歲
     // 例 1994/8/19 出生:fy=2027 → 2027/5/9 還沒過 8/19 → 32 歲
     let age = fy - y;
