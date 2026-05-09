@@ -1001,52 +1001,38 @@
     .header h1 {
       flex-direction: column;
       gap: 8px;
+      align-items: center;
     }
     .header h1 .en { font-size: 32px; }
     .header h1 .subtitle { font-size: 16px; padding-left: 0; letter-spacing: 0.4em; }
-    .topbar {
-      padding: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .controls {
-      flex-wrap: wrap;
+    .header { text-align: center; }
+
+    /* 手機板姓名格子:讓字母均勻分布並能換行 */
+    .name-display {
       justify-content: center;
-      gap: 8px;
+      gap: 4px 6px;
+      flex-wrap: wrap;
     }
-    .field input { width: 48px; font-size: 13px; }
-    .field input.year { width: 56px; }
-    .field.name-field { flex: 1 1 100%; min-width: 0; margin-top: 4px; }
-    .field.name-field input { width: 100%; }
-    button { width: 100%; height: 32px; margin-top: 4px; }
 
-    .name-block { grid-template-columns: 1fr; gap: 12px; }
-    .key-info { gap: 6px; padding: 8px; }
-    .ki-cell { padding: 10px 4px; min-height: 70px; }
-    .ki-cell .num { font-size: 20px; }
-
-    .name-section { padding: 8px 10px; }
-    .letter-stack .ch { font-size: 18px; }
-    .letter-stack .num { font-size: 11px; }
-    .name-item {
-      grid-template-columns: 50px 30px 1fr auto;
-      gap: 8px;
-      padding: 5px 2px;
+    /* === 手機板:整個 layout 改成單欄,並重新排序 === */
+    .layout {
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+      width: 100%;
+      gap: 16px;
     }
-    .name-item .nval { font-size: 20px; }
-    .name-item .nformula { font-size: 10px; }
-
-    .month-grid { grid-template-columns: repeat(4, 1fr); }
-    .month-cell .pm-num { font-size: 18px; }
-    .month-title-row { gap: 6px; padding: 4px 0 6px; }
-    .month-title { font-size: 13px; letter-spacing: 0.15em; }
-    .month-note { font-size: 11px; min-width: 0; }
-
-    .tl-track { grid-template-columns: repeat(6, 1fr); }
-    .mini-title { font-size: 13px; letter-spacing: 0.15em; }
-
-    /* 命盤同樣置中 */
-    .chart { padding: 0; }
+    /* 把 right 的 children 散開到 layout 上,讓 controlsBar 跟 chart 平起平坐 */
+    .right { display: contents; }
+    /* 順序:試算列(來自 right) → 命盤 → 姓名/業/流月/流年(來自 right) */
+    .topbar { order: 1; width: 100%; }
+    .chart { order: 2; padding: 0; width: 100%; }
+    .name-block { order: 3; width: 100%; }
+    .karma-traits-row { order: 4; width: 100%; }
+    .month-title-row { order: 5; width: 100%; }
+    .month-grid { order: 6; width: 100%; }
+    .mini-title { order: 7; width: 100%; }
+    .timeline { order: 8; width: 100%; }
     .chart-main { max-width: 100%; margin: 0 auto; }
     .row { padding: 4px 0; }
     .slot { min-width: 60px; padding: 4px 4px; }
@@ -1056,6 +1042,129 @@
     .slot.center .reduction { font-size: 12px; }
     .slot .lbl-tc { font-size: 11px; letter-spacing: 0.15em; }
     .slot .age, .slot .yr { font-size: 10px; }
+
+    /* 試算列:手機板 — 用 grid 鎖兩排,所有元素站在共同格線上
+       第一排:出生年 出生月 出生日 流年 [姓名翻譯靠右]
+       第二排:姓名 input(吃滿)+ 計算按鈕(貼右) */
+    .topbar {
+      padding: 10px 0;
+      gap: 0;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: 10px;
+      row-gap: 12px;
+      align-items: end;
+      justify-content: stretch;
+    }
+    /* 第一排 4 個小 field */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      grid-template-rows: none;
+      align-items: flex-start;
+      min-width: 0;
+    }
+    .field label { align-self: flex-start; }
+    /* 手機板隱藏 hint(桌機用 width:0 飄字的把戲在手機會溢出畫面) */
+    .field label .hint { display: none; }
+    .field input {
+      width: 100%;
+      font-size: 14px;
+      text-align: left;
+      padding: 4px 0;
+    }
+    .field input.year { width: 100%; }
+    /* 姓名 field:第二排,跨前 4 欄,讓 input 跟「計算」按鈕並排 */
+    .field.name-field {
+      grid-column: 1 / 5;
+      grid-row: 2;
+      min-width: 0;
+      margin-top: 0;
+    }
+    .field.name-field input {
+      width: 100%;
+      text-align: left;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+    }
+    /* 「姓名翻譯」連結 → 抓出 action-stack,單獨放第一排第 5 欄 */
+    .action-stack {
+      display: contents;
+    }
+    .action-stack .link-btn {
+      grid-column: 5;
+      grid-row: 1;
+      align-self: end;
+      padding-bottom: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    /* 計算按鈕:第二排第 5 欄,貼右 */
+    .action-stack button {
+      grid-column: 5;
+      grid-row: 2;
+      align-self: end;
+      min-width: 80px;
+      padding: 6px 18px;
+      height: 32px;
+    }
+
+    /* 名字區塊(右欄第一塊)→ 改單欄堆疊 */
+    .name-block .two-col {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .name-block .col-divider { display: none; }
+    .key-info { gap: 6px; }
+    .ki-cell { padding: 8px 4px; min-height: 60px; }
+    .ki-cell .num { font-size: 20px; }
+    .name-display {
+      gap: 0;
+      padding: 4px 0 6px;
+      margin-bottom: 8px;
+    }
+    .letter-stack .ch { font-size: 16px; }
+    .letter-stack .num { font-size: 10px; }
+    .name-item {
+      grid-template-columns: 70px 24px auto 1fr;
+      gap: 10px;
+      padding: 5px 2px;
+    }
+    .name-item .nval { font-size: 20px; }
+    .name-item .nformula { font-size: 10px; }
+
+    /* 業圖表 + 性情 → 改成上下堆疊 */
+    .karma-traits-row { grid-template-columns: 1fr; gap: 12px; }
+
+    /* 性情數字:壓縮中間留白 — label 跟 tnums 靠左群組,tval 貼右 */
+    .trait-row {
+      grid-template-columns: auto auto 1fr;
+      gap: 10px;
+      padding: 4px 12px;
+    }
+    .trait-row .tlbl { font-size: 13px; }
+    .trait-row .tnums { font-size: 10px; justify-self: start; }
+    .trait-row .tval { font-size: 20px; justify-self: end; }
+
+    /* 流月 12 欄 → 6 欄兩排 */
+    .month-grid { grid-template-columns: repeat(6, 1fr); gap: 5px; }
+    .month-cell { padding: 8px 2px; }
+    .month-cell .pm-num { font-size: 17px; }
+    .month-title-row { gap: 6px; padding: 4px 0 6px; flex-wrap: wrap; }
+    .month-title { font-size: 13px; letter-spacing: 0.15em; }
+    .month-note { font-size: 11px; min-width: 0; flex: 1 1 100%; }
+    .legend { font-size: 9px; gap: 6px; }
+
+    /* 流年週期 9 欄 → 9 欄(維持兩排,字縮小) */
+    .tl-track { grid-template-columns: repeat(9, 1fr); gap: 4px; row-gap: 2px; }
+    .tl-cell { padding: 4px 1px; }
+    .tl-cell .y { font-size: 8px; }
+    .tl-cell .v { font-size: 12px; }
+    .mini-title { font-size: 13px; letter-spacing: 0.15em; }
   }
 </style>
 </head>
@@ -1213,7 +1322,11 @@
       { ageRange: `${e2+1}-${e3}歲`, yearRange: `${y+e2+1}-${y+e3}` },
       { ageRange: `${e3+1}歲後`, yearRange: `${y+e3+1}+` }
     ];
-    const age = ageNow(y, m, d);
+    // 「實歲」+ 高峰 stage 判定:都用「查詢年的歲數」
+    // 規則:把 TODAY 的月日投影到查詢年(即 fy 年的 5/9 那一刻),看人幾歲
+    // 例 1994/8/19 出生:fy=2027 → 2027/5/9 還沒過 8/19 → 32 歲
+    let age = fy - y;
+    if (TODAY_M < m || (TODAY_M === m && TODAY_D < d)) age--;
     const currentStage = (age <= e1) ? 0 : (age <= e2) ? 1 : (age <= e3) ? 2 : 3;
     // 流年週期:1-9 順序固定,以「當前所屬週期的流年 1 那年」為起點
     // 找出 fy 所屬週期的起點年(該年的流年值 = 1)
@@ -1287,14 +1400,15 @@
       <div class="tagline">此生命數字計算器為<span class="signature">小玩</span>製作 · <a href="https://www.instagram.com/yufangzhong/" target="_blank" rel="noopener" class="ig-link"><svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>yufangzhong</a></div>
     </div>`;
   }
-  function controlsBar(){
+  function controlsBar(vals){
+    const v = vals || { y: '', m: '', d: '', fy: '', fullname: '' };
     return `<div class="topbar">
       <div class="controls">
-        <div class="field"><label>出生年</label><input type="number" id="y" class="year" value="1994" /></div>
-        <div class="field"><label>出生月</label><input type="number" id="m" value="8" /></div>
-        <div class="field"><label>出生日</label><input type="number" id="d" value="19" /></div>
-        <div class="field"><label>流年</label><input type="number" id="fy" class="year" value="${TODAY_Y}" /></div>
-        <div class="field name-field"><label>姓名 <span class="hint">出生時第一個英文拼音</span></label><input type="text" id="fullname" class="name fullname" value="CHUNG YUFANG" /></div>
+        <div class="field"><label>出生年</label><input type="number" id="y" class="year" value="${v.y}" placeholder="" /></div>
+        <div class="field"><label>出生月</label><input type="number" id="m" value="${v.m}" placeholder="" /></div>
+        <div class="field"><label>出生日</label><input type="number" id="d" value="${v.d}" placeholder="" /></div>
+        <div class="field"><label>宇宙年</label><input type="number" id="fy" class="year" value="${v.fy}" placeholder="" /></div>
+        <div class="field name-field"><label>姓名 <span class="hint">出生時第一個英文拼音</span></label><input type="text" id="fullname" class="name fullname" value="${v.fullname}" placeholder="" /></div>
         <div class="action-stack">
           <a href="https://www.boca.gov.tw/sp-natr-singleform-1.html" target="_blank" rel="noopener" class="link-btn">姓名翻譯 ↗</a>
           <button id="calc">計算</button>
@@ -1303,7 +1417,7 @@
     </div>`;
   }
 
-  function render(r){
+  function render(r, vals){
     const keyInfo = `<div class="key-info">
       <div class="ki-cell row-top">
         <div class="lab">實歲</div>
@@ -1453,7 +1567,7 @@
     }
 
     const right = `<div class="right">
-      ${controlsBar()}
+      ${controlsBar(vals)}
       ${nameSection}
       ${karmaTraitsBlock}
       <div class="month-title-row">
@@ -1465,7 +1579,7 @@
         </span>
       </div>
       <div class="month-grid">${monthCells}</div>
-      <div class="mini-title">流年 <span class="mt-py">${r.pyThis}</span> 週期 · <span class="mt-range">${r.timeline[9].year} → ${r.timeline[8].year}</span></div>
+      <div class="mini-title">個人年 <span class="mt-py">${r.pyThis}</span> 週期 · <span class="mt-range">${r.timeline[9].year} → ${r.timeline[8].year}</span></div>
       <div class="timeline"><div class="tl-track">${tlCells}</div></div>
     </div>`;
 
@@ -1499,27 +1613,74 @@
   }
 
   function run(){
-    const y = +($('y') ? $('y').value : 1994);
-    const m = +($('m') ? $('m').value : 8);
-    const d = +($('d') ? $('d').value : 19);
-    const fy = +($('fy') ? $('fy').value : TODAY_Y);
-    const full = $('fullname') ? $('fullname').value.trim() : 'CHUNG YUFANG';
+    const yStr = $('y') ? $('y').value : '';
+    const mStr = $('m') ? $('m').value : '';
+    const dStr = $('d') ? $('d').value : '';
+    const fyStr = $('fy') ? $('fy').value : '';
+    const fullname = $('fullname') ? $('fullname').value : '';
+    const y = +yStr, m = +mStr, d = +dStr, fy = +fyStr;
+    const full = fullname.trim();
     const { groups } = splitName(full);
+    const vals = { y: yStr, m: mStr, d: dStr, fy: fyStr, fullname };
+    // 缺值時:保留使用者已輸入的值,只把結果回到 placeholder 視覺
     if (!y || !m || !d || !fy) {
-      $('out').innerHTML = '<div class="empty">請填入年、月、日</div>'; return;
+      document.body.classList.add('placeholder-mode');
+      if (typeof fitToScreen === 'function') requestAnimationFrame(fitToScreen);
+      return;
     }
     if (m < 1 || m > 12 || d < 1 || d > 31) {
       $('out').innerHTML = '<div class="empty">月份或日期超出範圍</div>'; return;
     }
-    $('out').innerHTML = render(calc(y, m, d, fy, groups));
+    $('out').innerHTML = render(calc(y, m, d, fy, groups), vals);
     document.body.classList.remove('placeholder-mode');
     attachHandlers();
+    if (typeof fitToScreen === 'function') requestAnimationFrame(fitToScreen);
   }
 
-  // 首次載入:渲染版面後切換到 placeholder 模式
-  $('out').innerHTML = render(calc(1994, 8, 19, TODAY_Y, ['CHUNG', 'YUFANG']));
+  // 首次載入:渲染版面後切換到 placeholder 模式(input 空白)
+  $('out').innerHTML = render(calc(1994, 8, 19, TODAY_Y, ['CHUNG', 'YUFANG']), { y: '', m: '', d: '', fy: '', fullname: '' });
   document.body.classList.add('placeholder-mode');
   attachHandlers();
+
+  // === Fit-to-screen:小螢幕等比例縮放,讓內容一頁裝得下 ===
+  // 只在桌機板(>600px 寬)生效;手機板維持原本直式捲動
+  function fitToScreen(){
+    const wrap = document.querySelector('.wrap');
+    if (!wrap) return;
+    const isMobile = window.innerWidth <= 600;
+    if (isMobile) {
+      wrap.style.transform = '';
+      wrap.style.transformOrigin = '';
+      document.body.style.height = '';
+      return;
+    }
+    // 暫時清掉 transform 量真實高度
+    wrap.style.transform = 'none';
+    const naturalH = wrap.offsetHeight;
+    const naturalW = wrap.offsetWidth;
+    const viewportH = window.innerHeight;
+    const viewportW = window.innerWidth;
+    // 高度跟寬度比例都要看,取較小者(避免內容被切到)
+    const hRatio = viewportH / naturalH;
+    const wRatio = viewportW / naturalW;
+    let ratio = Math.min(hRatio, wRatio, 1); // 不放大,只縮小
+    // 下限 0.7,避免太小看不清
+    ratio = Math.max(ratio, 0.7);
+    if (ratio >= 0.99) {
+      // 不需要縮放
+      wrap.style.transform = '';
+      wrap.style.transformOrigin = '';
+      document.body.style.height = '';
+      return;
+    }
+    wrap.style.transformOrigin = 'top center';
+    wrap.style.transform = `scale(${ratio})`;
+    // 修正:scale 後元素仍佔原本空間,要把 body 高度收回避免下方空白
+    document.body.style.height = (naturalH * ratio) + 'px';
+  }
+  // 初次 + 視窗變化都要重算
+  fitToScreen();
+  window.addEventListener('resize', fitToScreen);
 </script>
 
 </body>
