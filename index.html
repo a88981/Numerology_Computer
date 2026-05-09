@@ -1713,19 +1713,54 @@
       console.log('[snap] rendering canvas...');
       // 手機板:強制用桌機寬度截圖,讓媒體查詢重算成桌機版面
       const isMobile = window.innerWidth <= 600;
-      const snapWidth = isMobile ? 1200 : target.scrollWidth;
-      // 高度給寬鬆一點,內容多時不會被截掉
-      const snapHeight = isMobile ? 1000 : target.scrollHeight;
-      const canvas = await html2canvas(target, {
+      const opts = {
         backgroundColor: '#fafbfc',
         scale: 2,
         useCORS: true,
         logging: false,
-        windowWidth: snapWidth,
-        windowHeight: snapHeight,
-        width: snapWidth,
-        height: snapHeight,
-      });
+      };
+      let canvas;
+      if (isMobile) {
+        // html2canvas 用 windowWidth 1200 模擬桌機 viewport,讓 @media 重算
+        opts.windowWidth = 1200;
+        opts.windowHeight = 2000;
+        // 在 clone 上量真實桌機版尺寸,稍後用來裁切 canvas
+        let measuredW = 1200, measuredH = 1000;
+        opts.onclone = (clonedDoc) => {
+          // 量桌機版下實際內容(header + layout)所需高度
+          const clonedHeader = clonedDoc.querySelector('.header');
+          const clonedLayout = clonedDoc.querySelector('.layout');
+          const clonedWrap = clonedDoc.querySelector('.wrap');
+          if (clonedLayout && clonedWrap) {
+            const headerH = clonedHeader ? clonedHeader.offsetHeight : 0;
+            const layoutH = clonedLayout.offsetHeight;
+            // wrap padding 上下
+            const cs = clonedDoc.defaultView ? clonedDoc.defaultView.getComputedStyle(clonedWrap) : null;
+            const padTop = cs ? parseInt(cs.paddingTop) || 0 : 14;
+            const padBot = cs ? parseInt(cs.paddingBottom) || 0 : 30;
+            measuredW = clonedWrap.offsetWidth || 1200;
+            measuredH = headerH + layoutH + padTop + padBot;
+          }
+        };
+        const fullCanvas = await html2canvas(target, opts);
+        console.log('[snap] full canvas:', fullCanvas.width, 'x', fullCanvas.height,
+                    'measured:', measuredW, 'x', measuredH);
+        // 裁切到真實尺寸(scale 2 倍)
+        const cropW = Math.min(measuredW * 2, fullCanvas.width);
+        const cropH = Math.min(measuredH * 2, fullCanvas.height);
+        const cropped = document.createElement('canvas');
+        cropped.width = cropW;
+        cropped.height = cropH;
+        const ctx = cropped.getContext('2d');
+        ctx.fillStyle = '#fafbfc';
+        ctx.fillRect(0, 0, cropW, cropH);
+        ctx.drawImage(fullCanvas, 0, 0, cropW, cropH, 0, 0, cropW, cropH);
+        canvas = cropped;
+      } else {
+        opts.windowWidth = target.scrollWidth;
+        opts.windowHeight = target.scrollHeight;
+        canvas = await html2canvas(target, opts);
+      }
       if (layout) layout.style.zoom = originalZoom || '1.1';
       console.log('[snap] canvas done, size:', canvas.width, 'x', canvas.height);
 
