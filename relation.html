@@ -109,6 +109,7 @@
     align-items: end;
     gap: 12px;
     margin-bottom: 14px;
+    min-height: 56px;
   }
   .person-label {
     font-size: 13px;
@@ -168,6 +169,8 @@
     padding-top: 14px;
     border-top: 1px solid var(--line-soft);
     flex-wrap: wrap;
+    min-height: 70px;
+    box-sizing: border-box;
   }
   .mode-options {
     display: flex;
@@ -241,8 +244,8 @@
   .mp-person-row {
     grid-template-columns: 60px minmax(0, 1fr) !important;
     min-height: 56px;
-    align-items: center !important;
   }
+  /* 按鈕區整體往下推 6px,跟生日模式 input 底線同一條基準線 */
   .mp-btns-inline {
     display: flex;
     gap: 6px;
@@ -250,6 +253,7 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    padding-bottom: 6px;
   }
   .mode-row.no-fy .year-inputs,
   .mode-row.no-fy button#calc { display: none; }
@@ -851,12 +855,12 @@
 
     <div class="mode-row">
       <div class="mode-options" role="tablist">
-        <label class="mode-tab active">
-          <input type="radio" name="mode" value="manual" checked>
+        <label class="mode-tab">
+          <input type="radio" name="mode" value="manual">
           <span class="mode-tab-tc">自由試算</span>
         </label>
-        <label class="mode-tab">
-          <input type="radio" name="mode" value="single">
+        <label class="mode-tab active">
+          <input type="radio" name="mode" value="single" checked>
           <span class="mode-tab-tc">單一年</span>
         </label>
         <label class="mode-tab">
@@ -874,7 +878,7 @@
   <section class="result-section" id="result">
     <div class="empty-state">
       <div class="marker">✦ ✦ ✦</div>
-      <div>選擇兩人的個人流年數字</div>
+      <div>填入雙方生日與年份,按計算</div>
     </div>
   </section>
 </div>
