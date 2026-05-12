@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relational Years · 關係年</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1e3a;
+    --ink-soft: #2a3a58;
+    --ink-dim: #6b7a92;
+    --ink-dimmer: #9aa5ba;
+    --accent: #1e4a8a;
+    --accent-strong: #143868;
+    --accent-soft: #6585b0;
+    --accent-bg: rgba(30, 74, 138, 0.08);
+    --accent-bg-strong: rgba(30, 74, 138, 0.18);
+    --vowel: #b7384c;
+    --vowel-soft: rgba(183, 56, 76, 0.1);
+    --line: #d8dee8;
+    --line-soft: #e8edf3;
+    --bg: #fafbfc;
+    --serif-en: 'Cormorant Garamond', serif;
+    --serif-tc: 'Noto Serif TC', serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--serif-tc);
+    color: var(--ink);
+    background: var(--bg);
+    position: relative;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% -10%, rgba(120, 165, 215, 0.176), transparent 60%),
+      radial-gradient(ellipse 50% 45% at -10% 20%, rgba(100, 150, 200, 0.132), transparent 60%),
+      radial-gradient(ellipse 50% 45% at 110% 80%, rgba(130, 170, 220, 0.132), transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 14px 18px 40px;
+    box-sizing: border-box;
+  }
+
+  /* 標題 */
+  .header {
+    text-align: center;
+    margin-bottom: 16px;
+    padding: 4px 0 12px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .header h1 {
+    line-height: 1;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .header h1 .en {
+    font-family: var(--serif-en);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(22px, 3vw, 30px);
+    color: var(--accent-strong);
+    letter-spacing: 0.01em;
+  }
+  .header h1 .subtitle {
+    font-family: var(--serif-tc);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--accent-strong);
+    letter-spacing: 0.35em;
+  }
+  .tagline {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  /* 輸入區 */
+  .input-section {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .person-row {
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .person-label {
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    padding-bottom: 6px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .field label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.15em;
+    font-weight: 500;
+  }
+  .field input {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--line);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 16px;
+    padding: 4px 2px;
+    text-align: center;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  .field input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+    color: var(--accent-strong);
+  }
+  /* 隱藏 number input 的上下箭頭 spinner */
+  .field input[type="number"]::-webkit-outer-spin-button,
+  .field input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .field input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* 模式切換 */
+  .mode-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+    flex-wrap: wrap;
+  }
+  .mode-options {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.4);
+  }
+  .mode-tab {
+    cursor: pointer;
+    padding: 8px 16px;
+    font-family: var(--serif-tc);
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.15em;
+    transition: all 0.2s;
+    border-right: 1px solid var(--line);
+    user-select: none;
+    white-space: nowrap;
+  }
+  .mode-tab:last-child { border-right: none; }
+  .mode-tab input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .mode-tab:hover {
+    background: rgba(30, 74, 138, 0.06);
+    color: var(--accent);
+  }
+  .mode-tab.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+  .year-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+    flex: 1;
+    min-width: 200px;
+  }
+  .year-inputs .field input { width: 72px; }
+  .year-arrow {
+    color: var(--ink-dimmer);
+    padding-bottom: 6px;
+  }
+  button#calc {
+    background: var(--accent);
+    border: 1.5px solid var(--accent);
+    color: #fff;
+    padding: 6px 22px;
+    font-family: var(--serif-tc);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: background 0.2s;
+    height: 32px;
+    white-space: nowrap;
+  }
+  button#calc:hover { background: var(--accent-strong); }
+
+  /* 自由試算 — 選個人年組合 */
+  .birthday-block.hide { display: none; }
+  /* bb-mode 切換 */
+  .bb-mode-birthday { display: block; }
+  .bb-mode-manual { display: none; }
+  .birthday-block.manual-mode .bb-mode-birthday { display: none; }
+  .birthday-block.manual-mode .bb-mode-manual { display: block; }
+  /* 1-9 按鈕在 person-row 裡:跨年/月/日 三欄合一格 */
+  .mp-person-row {
+    grid-template-columns: 60px minmax(0, 1fr) !important;
+    min-height: 56px;
+    align-items: center !important;
+  }
+  .mp-btns-inline {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .mode-row.no-fy .year-inputs,
+  .mode-row.no-fy button#calc { display: none; }
+  .mp-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .mp-label {
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    min-width: 40px;
+  }
+  .mp-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  .mp-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mp-num:hover { border-color: var(--accent-soft); color: var(--accent); }
+  .mp-btns[data-side="a"] .mp-num.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .mp-btns[data-side="b"] .mp-num.active {
+    background: var(--vowel);
+    border-color: var(--vowel);
+    color: #fff;
+  }
+  .mp-rel-row {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--accent-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .mp-rel-label {
+    font-size: 12px;
+    color: var(--vowel);
+    letter-spacing: 0.18em;
+    font-weight: 600;
+  }
+  .mp-rel-val {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--vowel);
+    line-height: 1;
+  }
+  .mp-rel-formula {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.03em;
+  }
+
+  /* manual pick 結果區 */
+  .mp-result-block {
+    margin-top: 18px;
+    margin-bottom: 18px;
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--vowel);
+  }
+  .mp-result-header {
+    font-family: var(--serif-en);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--vowel);
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  /* 結果區 — 卡片(單一年模式) */
+  .result-section { margin-top: 8px; }
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--ink-dimmer);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+  .empty-state .marker {
+    color: var(--vowel);
+    font-size: 22px;
+    letter-spacing: 0.8em;
+    margin-bottom: 12px;
+    opacity: 0.6;
+    line-height: 1;
+  }
+
+  .summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--line);
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+  }
+  .summary-item .sm-lab {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+  }
+  .summary-item .sm-val {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--accent-strong);
+    line-height: 1;
+  }
+  .summary-item .sm-formula {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+  .summary-eq {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--ink-dimmer);
+  }
+  .summary-item.relation .sm-val { color: var(--vowel); font-size: 28px; }
+  .summary-item.relation .sm-lab { color: var(--vowel); }
+
+  /* 段落小標(eyebrow) */
+  .section-eyebrow {
+    font-family: var(--serif-en);
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: var(--vowel);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  /* 個人流年區塊 — 兩欄並排 */
+  .personal-section { margin-bottom: 14px; }
+  .personal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .personal-card {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.6);
+    padding: 14px 16px;
+    border-left: 3px solid var(--accent-soft);
+  }
+  .personal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .p-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .p-who {
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+  }
+  .p-en {
+    font-family: var(--serif-en);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .p-title {
+    font-family: var(--serif-tc);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    margin-bottom: 7px;
+  }
+  .p-desc {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    text-align: justify;
+  }
+
+  /* 組合動態區塊 */
+  .relation-section { margin-top: 14px; }
+  .combo-section { margin-top: 14px; }
+  .combo-box {
+    border: 1px solid var(--line);
+    background: var(--accent-bg);
+    padding: 14px 18px;
+    border-left: 3px solid var(--vowel);
+  }
+  .combo-label {
+    font-size: 11px;
+    color: var(--vowel);
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .combo-desc {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+    text-align: justify;
+  }
+
+  /* 卡片 */
+  .card {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.7);
+    border-left: 4px solid var(--accent);
+    padding: 18px 22px;
+    margin-bottom: 10px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .num-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .card-title-block { flex: 1; }
+  .card-en-title {
+    font-family: var(--serif-en);
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .card-title {
+    font-family: var(--serif-tc);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+    margin-bottom: 14px;
+    text-align: justify;
+  }
+  .card-rows {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .card-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .row-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+  }
+  .tags { display: flex; flex-wrap: nowrap; gap: 4px; }
+  .tag {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tag-key { background: var(--accent-bg); color: var(--accent-strong); }
+  .tag-good { background: rgba(45, 125, 45, 0.1); color: #2d7d2d; }
+  .tag-warn { background: var(--vowel-soft); color: var(--vowel); }
+
+  /* 範圍模式 — 多年表 */
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 70px 60px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--accent-soft);
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .timeline-row:hover {
+    background: rgba(255,255,255,0.8);
+    border-left-color: var(--accent);
+  }
+  .timeline-row.expanded {
+    border-left-color: var(--vowel);
+    background: rgba(255,255,255,0.8);
+  }
+  .tl-year {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--accent-strong);
+  }
+  .tl-num {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--vowel);
+    text-align: center;
+  }
+  .tl-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tl-title {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .tl-formula {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.03em;
+  }
+  .num-pill {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0 1px;
+  }
+  .num-pill.self {
+    background: var(--accent-bg);
+    color: var(--accent-strong);
+  }
+  .num-pill.other {
+    background: var(--vowel-soft);
+    color: var(--vowel);
+  }
+  .num-pill.sum {
+    background: rgba(155, 165, 186, 0.18);
+    color: var(--ink-soft);
+  }
+  .num-pill.rel {
+    background: var(--vowel);
+    color: #fff;
+  }
+  .timeline-expand {
+    display: none;
+    padding: 0 16px 12px 22px;
+    background: rgba(255,255,255,0.4);
+    border-left: 3px solid var(--vowel);
+    border-right: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    margin-top: -5px;
+    margin-bottom: 5px;
+  }
+  .timeline-expand.show { display: block; }
+  .timeline-expand .card {
+    border: none;
+    background: transparent;
+    border-left: none;
+    padding: 12px 0 4px;
+    margin-bottom: 0;
+  }
+
+  /* 範圍模式 — chip 列 */
+  .range-hint {
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .year-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .year-chip {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--line);
+    padding: 10px 8px 8px;
+    cursor: pointer;
+    text-align: center;
+    font-family: var(--serif-tc);
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border-radius: 0;
+  }
+  .year-chip:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--accent-soft);
+  }
+  .year-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .year-chip.active .chip-year { color: rgba(255,255,255,0.85); }
+  .year-chip.active .chip-num { color: #fff; }
+  .year-chip.active .chip-title { color: rgba(255,255,255,0.95); }
+  .chip-year {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+  .chip-formula {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    line-height: 1;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+  .chip-formula .cf-self { color: var(--accent-strong); font-weight: 700; }
+  .chip-formula .cf-other { color: var(--vowel); font-weight: 700; }
+  .chip-formula .cf-op { color: var(--ink-dimmer); }
+  .year-chip.active .chip-formula { color: rgba(255,255,255,0.7); }
+  .year-chip.active .chip-formula .cf-self,
+  .year-chip.active .chip-formula .cf-other { color: #fff; }
+  .year-chip.active .chip-formula .cf-op { color: rgba(255,255,255,0.6); }
+  .chip-num {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--vowel);
+    line-height: 1.1;
+    margin: 2px 0;
+  }
+  .chip-title {
+    font-size: 11.5px;
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .range-detail {
+    display: none;
+    margin-top: 8px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--line);
+  }
+  .range-detail.show { display: block; }
+  .detail-header {
+    font-family: var(--serif-en);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--vowel);
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+  /* 手機 */
+  @media (max-width: 600px) {
+    .person-row {
+      grid-template-columns: 50px 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .person-row .field { min-width: 0; }
+    .person-row .field input { width: 100%; min-width: 0; font-size: 14px; box-sizing: border-box; }
+    .person-label { font-size: 12px; }
+    .input-section { padding: 16px 18px; }
+    .mode-row { flex-direction: column; align-items: stretch; gap: 12px; }
+    .year-inputs { width: 100%; }
+    .year-inputs .field { flex: 1; min-width: 0; }
+    .year-inputs .field input { width: 100%; }
+    button#calc { width: 100%; }
+    .summary-bar { gap: 14px; padding: 12px 14px; }
+    .summary-item .sm-val { font-size: 18px; }
+    .summary-item.relation .sm-val { font-size: 24px; }
+    .card { padding: 14px 16px; }
+    .card-rows { grid-template-columns: 1fr; gap: 10px; }
+    .personal-grid { grid-template-columns: 1fr; }
+    .timeline-row { grid-template-columns: 60px 50px 1fr; padding: 10px 12px; gap: 10px; }
+    .year-chips { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; }
+    .year-chip { padding: 8px 6px 6px; }
+    .chip-num { font-size: 18px; }
+    .chip-title { font-size: 10.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="header">
+    <h1><span class="en">Relational Years</span><span class="subtitle">關 係 年</span></h1>
+    <div class="tagline">兩人個人流年相加 · 計算當下關係週期的能量主題</div>
+  </header>
+
+  <section class="input-section">
+    <div class="birthday-block" id="birthdayBlock">
+      <!-- 一般模式:生日輸入 -->
+      <div class="bb-mode-birthday" id="bbBirthday">
+        <div class="person-row">
+          <div class="person-label">自己</div>
+          <div class="field"><label>年</label><input type="number" id="y1" placeholder="" /></div>
+          <div class="field"><label>月</label><input type="number" id="m1" placeholder="" /></div>
+          <div class="field"><label>日</label><input type="number" id="d1" placeholder="" /></div>
+        </div>
+        <div class="person-row">
+          <div class="person-label">對方</div>
+          <div class="field"><label>年</label><input type="number" id="y2" placeholder="" /></div>
+          <div class="field"><label>月</label><input type="number" id="m2" placeholder="" /></div>
+          <div class="field"><label>日</label><input type="number" id="d2" placeholder="" /></div>
+        </div>
+      </div>
+      <!-- 自由試算模式:1-9 按鈕(取代生日輸入) -->
+      <div class="bb-mode-manual" id="bbManual">
+        <div class="person-row mp-person-row">
+          <div class="person-label">自己</div>
+          <div class="mp-btns mp-btns-inline" data-side="a"></div>
+        </div>
+        <div class="person-row mp-person-row">
+          <div class="person-label">對方</div>
+          <div class="mp-btns mp-btns-inline" data-side="b"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-row">
+      <div class="mode-options" role="tablist">
+        <label class="mode-tab active">
+          <input type="radio" name="mode" value="manual" checked>
+          <span class="mode-tab-tc">自由試算</span>
+        </label>
+        <label class="mode-tab">
+          <input type="radio" name="mode" value="single">
+          <span class="mode-tab-tc">單一年</span>
+        </label>
+        <label class="mode-tab">
+          <input type="radio" name="mode" value="range">
+          <span class="mode-tab-tc">年份範圍</span>
+        </label>
+      </div>
+      <div class="year-inputs" id="yearInputs">
+        <div class="field"><label>查詢年</label><input type="number" id="fy" placeholder="" /></div>
+      </div>
+      <button id="calc">計算</button>
+    </div>
+  </section>
+
+  <section class="result-section" id="result">
+    <div class="empty-state">
+      <div class="marker">✦ ✦ ✦</div>
+      <div>選擇兩人的個人流年數字</div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const now = new Date();
+  const TODAY_Y = now.getFullYear();
+
+  // 預設今年
+  $('fy').value = '';
+
+  // reduce 到單位數(無大師數字)
+  function reduce(n){
+    while (n > 9) {
+      n = String(n).split('').reduce((a, c) => a + (+c), 0);
+    }
+    return n;
+  }
+  function reduceYear(y){ return reduce(y); }
+  function calcPersonalYear(m, d, year){
+    return reduce(reduceYear(year) + reduce(m) + reduce(d));
+  }
+  function calcRelation(py1, py2){
+    return reduce(py1 + py2);
+  }
+
+  // 1-9 主題資料(stub — 你給資料後填進來)
+  const themeData = {
+    1: {
+      en: 'The New Beginning',
+      title: '新開始 · 重新出發',
+      desc: '關係進入全新九年週期的起點。這一年帶有強烈的「重啟」能量,可能是兩人第一次確認關係、從危機中重新出發,或共同開啟一個新計畫。雙方自我意識與獨立性都會增強,各自有想主導方向的渴望。這一年的關鍵是:能否把「我要」轉化成「我們要」。若兩人能對齊方向,這將是整個週期中最有行動力的一年。',
+      key: ['新週期起點', '重新定義', '共同方向'],
+      good: ['開始交往', '重啟關係', '共同立志'],
+      warn: ['各自為政', '競爭感強', '避免衝動承諾'],
+    },
+    2: {
+      en: 'Deepening Bonds',
+      title: '情感深化 · 耐心經營',
+      desc: '這是關係中最細膩、最敏感的一年。兩人對彼此的情緒變化高度敏銳,容易感受到對方的一個眼神、一句話背後的意思。適合深入溝通、修復裂痕、建立信任。浪漫感會自然升溫,但也容易因小事受傷或誤解。這一年不適合逼對方做決定,需要的是耐心等待與溫柔陪伴。關係中的「感受」比「行動」重要。',
+      key: ['情感敏銳', '耐心等待', '細水長流'],
+      good: ['深度溝通', '修復關係', '增進信任'],
+      warn: ['情緒化', '猜疑心重', '過度依賴'],
+    },
+    3: {
+      en: 'Joy & Expression',
+      title: '歡樂創意 · 社交活躍',
+      desc: '這一年關係充滿輕鬆、趣味與自發性。兩人在一起時容易笑、容易玩,社交圈擴大,可能因共同參與活動、旅行或創作而更靠近。情感表達變得自然而流暢,是關係中的「蜜月感」週期。然而這一年也容易流於表面,享受當下卻忽略關係的深度建設。不宜在此年做出大型承諾或重大決定,但非常適合增加美好的共同回憶。',
+      key: ['輕鬆甜蜜', '共同娛樂', '創意表達'],
+      good: ['增加回憶', '旅行冒險', '情感表達'],
+      warn: ['流於表面', '迴避現實', '浮躁不定'],
+    },
+    4: {
+      en: 'Building Foundations',
+      title: '建立根基 · 務實穩定',
+      desc: '這是兩人共同「蓋地基」的一年。關係從浪漫走向實際,開始面對現實層面的問題——財務、居住、時間分配、家庭期待。浪漫感會稍退,但忠誠度與可靠性卻是九年中最高的。這一年適合做長遠規劃,比如同居、財務合作、或共同承諾。需要注意的是:不要讓現實壓力成為彼此的出氣筒,需刻意製造溫柔的瞬間。',
+      key: ['踏實建設', '長遠規劃', '現實考驗'],
+      good: ['同居規劃', '共同承諾', '財務穩固'],
+      warn: ['缺乏激情', '壓力轉移', '過度保守'],
+    },
+    5: {
+      en: 'Change & Freedom',
+      title: '變化衝擊 · 自由渴望',
+      desc: '這是九年週期中震盪最大的一年。外在變化頻繁,兩人各自或共同面臨重大轉折,雙方都渴望自由、新鮮感與突破。關係可能出現危機、距離感、或外來誘惑。有些關係在這一年結束,有些則因為共同經歷變化而變得更成熟、更真實。關鍵在於:變化來臨時,能否選擇一起面對,而非各自逃跑。',
+      key: ['不穩定', '自由渴望', '重大轉變'],
+      good: ['突破舊模式', '共同蛻變', '重燃激情'],
+      warn: ['外來誘惑', '衝動離開', '逃避溝通'],
+    },
+    6: {
+      en: 'Commitment & Care',
+      title: '責任承諾 · 家庭溫暖',
+      desc: '這是九年週期中最適合深化承諾的一年。關係重心轉向「照顧彼此」,兩人自然進入一種互相負責的狀態。婚姻、同居、迎接新生命、或與對方家人建立更深連結,都是這一年常見的主題。愛的語言以「行動付出」為主,不需要太多言語,卻能感受到深厚的安全感。需注意避免過度犧牲自我,或因承擔太多而產生委屈。',
+      key: ['承諾與責任', '家庭連結', '踏實的愛'],
+      good: ['婚姻同居', '深化承諾', '家庭融合'],
+      warn: ['犧牲過度', '忽略自我', '家庭壓力介入'],
+    },
+    7: {
+      en: 'Soul Reflection',
+      title: '靈魂考驗 · 內在探索',
+      desc: '這是關係中最安靜、也最深刻的一年。兩人可能感到某種難以言說的距離感,對話減少,各自沉浸在自己的內在世界。這不一定是關係變差,而是靈魂在各自成熟。若關係根基深厚,這一年反而會發展出超越語言的默契與靈性連結;若本來就有裂痕,則這一年的沉默會把問題放大。需要給彼此空間,同時保持最基本的情感聯繫。',
+      key: ['靈性連結', '內省成長', '沉默考驗'],
+      good: ['靈魂默契', '深度理解', '各自成長'],
+      warn: ['疏離感強', '溝通斷層', '孤獨感放大'],
+    },
+    8: {
+      en: 'Power & Achievement',
+      title: '野心成就 · 權力平衡',
+      desc: '這一年兩人在關係中的「成就感」與「掌控欲」同時被啟動。雙方事業或財務可能有大進展,但外在壓力很容易被帶進感情裡。這一年關係的核心考驗是:誰說了算?能否在愛情中保持平等而非競爭?若兩人能把彼此視為盟友,共同朝向目標,這一年可以創造非常豐盛的成果;若各有算盤,則容易在關係中出現控制或忽視。',
+      key: ['成就與掌控', '權力平衡', '共同豐盛'],
+      good: ['共同成就', '財務合作', '目標一致'],
+      warn: ['權力爭奪', '工作壓力', '情感被忽視'],
+    },
+    9: {
+      en: 'Completion & Release',
+      title: '完結業力 · 療癒放下',
+      desc: '這是九年週期的最後一年,帶有強烈的「完結」與「清理」能量。關係中積累的舊傷、未解的心結、或不誠實的部分,都會在這一年被推到表面來面對。有些關係在這一年走到終點,有些則通過深刻的療癒與放下,為下一個九年週期打開空間。這一年情緒起伏較大,需要勇氣去面對真實,而非逃避。放下不代表失去,而是為更真實的連結騰出位置。',
+      key: ['業力收尾', '療癒舊傷', '誠實面對'],
+      good: ['深度療癒', '業力清理', '精神成熟'],
+      warn: ['容易分離', '情緒激烈', '強迫揭露'],
+    },
+  };
+
+  // 個人流年資料(1-9)
+  const personalData = {
+    1: { en: 'Sowing', title: '播種 · 新週期啟動', desc: '這一年你站在一個全新的起點上,舊的週期已結束,新的方向正在成形。內在有股強烈的推動力——想要開始、想要主導、想要成為自己。能量充沛但也容易衝動,適合勇敢踏出新的一步,但需要避免因過度自我而忽略身邊的人。' },
+    2: { en: 'Awaiting', title: '等待 · 情感流動', desc: '這一年你的感知力大幅提升,直覺敏銳,情緒豐富。你渴望被理解、被陪伴,同時也對他人的情緒非常敏感。這不是衝刺的一年,而是靜靜等待、細心感受的一年。合作、傾聽、耐心,是你今年最重要的功課。' },
+    3: { en: 'Expression', title: '表達 · 創意綻放', desc: '這一年你充滿創意與活力,渴望表達、分享、被看見。社交圈擴大,人際關係豐富,笑聲比平時多。你的魅力自然散發,容易吸引人。但要注意這一年也容易分心、過度享樂,需保持一定的專注與自律。' },
+    4: { en: 'Building', title: '建設 · 踏實耕耘', desc: '這一年你被推動去打地基、建系統、面對現實。可能會覺得辛苦、受限,但這些努力都在為未來奠定根基。腳踏實地、有條不紊是你的關鍵詞。避免抱怨,專注在能控制的事情上,今年的付出,未來幾年都會感謝你自己。' },
+    5: { en: 'Freedom', title: '自由 · 變化席捲', desc: '這一年充滿意外與轉折,計畫趕不上變化。你渴望自由、新鮮感與突破,受不了一成不變。這一年不適合做長遠規劃,而是學習在變化中保持彈性。旅行、新體驗、突破舒適圈,都是這一年的主旋律。' },
+    6: { en: 'Devotion', title: '責任 · 愛的付出', desc: '這一年你被拉向關係、家庭與責任。你渴望照顧他人,也需要被照顧。愛、美、和諧,是你今年最在意的事。可能面對家庭議題或感情承諾的時刻。需注意不要過度犧牲自我,學習在給予的同時也允許自己接受。' },
+    7: { en: 'Reflection', title: '內省 · 靈魂探尋', desc: '這一年你被推向內在,需要安靜、獨處與深思。外在世界的喧囂讓你感到疲憊,你更想探索更深層的問題——我是誰?我真正想要什麼?這是靈性成長的一年,直覺與洞察力強,但也可能感到孤獨或疏離。' },
+    8: { en: 'Achievement', title: '成就 · 豐盛實現', desc: '這一年充滿野心與執行力,你渴望成就、認可與物質豐盛。在事業、財務或地位上容易有所突破。但這一年也容易過度控制,或把自我價值與外在成就綁在一起。學習在追求成功的同時,不忘照顧內心與關係。' },
+    9: { en: 'Release', title: '放下 · 業力收尾', desc: '這是九年週期的最後一年,你被推動去放下、結束、與過去和解。某些人事物將從你生命中離去,這是必要的清空。情緒起伏較大,容易感傷,但這一年的放下是為了下一個新週期的開始。寬恕、慈悲、感恩,是你的關鍵詞。' },
+  };
+
+  // 兩數字組合動態 — 動態函式,依關係年 r 變化內容
+  const comboData = {
+    "1-1": r => `兩個「1」都在開創新局、都想主導方向,能量倍增,但也意味著兩股強烈的自我意志在同一空間碰撞。在關係年${r}(${themeData[r].title})的場域下,${
+      r===1?"這股「我要」的衝勁有機會對齊成「我們要」——若兩人能在這一年共同設定方向,將為接下來的九年打下最有力的起點。":
+      r===2?"這股衝勁被關係年的情感敏銳度拉住了——兩人都需要慢下來感受彼此,主導欲若不加以覺察,容易演變成爭論誰的感受更正確。":
+      r===3?"兩個「1」的銳氣在輕鬆的氛圍裡反而柔化,今年更像是共同玩耍、探索,競爭感降低,適合用創意把能量引向共同計畫。":
+      r===4?"開創的衝動在關係年的現實要求下需要落地——兩人的主導欲若能各司其職、分工明確,這一年可以把很多「想做的事」真正實現。":
+      r===5?"兩個都想往外衝的人,在最震盪的一年相遇,能量激烈。各自都有強烈的個人需求爆發,最大的考驗是:變化來臨時,能否選擇往彼此的方向跑,而非各自逃跑。":
+      r===6?"看似矛盾——兩個都想開創自我的人,卻在關係年被推向承諾與責任。但正是這一年讓「1」的衝勁有了具體的落點:不是為自己跑,而是為這段關係跑。若兩人都接受這個轉化,將是很有力的承諾時刻。":
+      r===7?"兩個行動派的人在靈性探索年被迫慢下來。今年的主旋律不是「做什麼」,而是「想清楚為什麼」。這對雙「1」是很不習慣但非常必要的功課。":
+      r===8?"三個強勢數字疊加,能量龐大。若兩人方向一致,這一年可以共同創造驚人的成果;若各有盤算,衝突也會格外激烈。關鍵在於:能否把「我的成就」轉化成「我們的成就」。":
+      "兩個剛開始的人卻在收尾年相遇,有種奇特的業力感——彷彿需要先放下某些舊的模式,才能讓新的開創真正發生。今年與其急著往前衝,不如先誠實清理是什麼阻礙了真正的出發。"
+    }`,
+    "1-2": r => `「1」的衝勁遇上「2」的細膩感性,一個重行動,一個重感受。在關係年${r}(${themeData[r].title})的場域下,${
+      r===3?"今年的輕鬆氛圍讓這個組合非常自在——「1」帶方向,「2」帶溫度,兩人在笑聲中自然靠近,是很甜蜜的一年。":
+      r===4?"「1」想突破,「2」想連結,關係年把兩人都拉向踏實經營——今年的功課是:「1」慢下來讓「2」跟上,「2」說出真正的需求而非默默配合。":
+      r===5?"三個能量都在流動,今年關係的震盪可能不小。「2」的不安全感容易被「1」的衝動引爆,需要「1」有意識地安頓「2」,才能讓這一年的變化成為成長而非裂痕。":
+      r===6?"這個組合在關係年6裡非常和諧——「1」的行動力與「2」的情感細膩,在責任與承諾的框架下形成美好的互補。今年很可能出現讓兩人關係正式確認的時刻。":
+      r===7?"「1」想往外衝,「2」想深度連結,關係年又把兩人推向內省。今年可能出現「一個想說話、一個需要安靜」的張力,需要約定好給彼此的空間與陪伴的節奏。":
+      "今年的關係場域把「1」的衝勁與「2」的感性都放在同一個容器裡——「1」學習等待,「2」學習開口說出需求,這是兩人這一年最重要的功課。"
+    }`,
+    "1-3": r => `「1」帶方向感,「3」帶歡樂創意,兩人在一起充滿活力與笑聲。在關係年${r}(${themeData[r].title})的場域下,${
+      r===4?"今年的務實能量幫了兩人一個忙——把活力與創意引向實際落地。很多共同計畫可以在這一年從「想法」變成「行動」,是這個組合很有建設性的一年。":
+      r===5?"三個充滿動能的數字疊加,今年關係裡刺激與歡樂並存,但也最容易因為各自都「想玩」而沒有人認真顧關係。需要至少偶爾停下來,確認兩人在同一條船上。":
+      r===6?"輕鬆的組合遇上承諾的一年,今年關係被推向比「好玩」更深的層次。「3」可能比「1」更慢做好承諾的準備,需要「1」有耐心,但不要因此讓關係停在表面。":
+      r===7?"歡樂的組合在靈性探索年被推向更深的問題——今年可能有「我們除了在一起很開心,還有什麼?」的時刻浮現。這不是壞事,而是這段關係準備深化的信號。":
+      r===9?"「1」與「3」的輕盈活力,在業力收尾年遇上了需要誠實面對的時刻。今年關係裡可能有些一直被歡笑略過的深層議題浮出水面,需要兩人都有勇氣認真面對。":
+      "今年的關係場域給了這個充滿活力的組合一個方向——「1」與「3」的能量在關係年的主題下找到了共同的出口,是展現這段感情魅力的好時機。"
+    }`,
+    "1-4": r => `「1」渴望突破,「4」需要穩定秩序,一個想打破框架,一個想建立框架。在關係年${r}(${themeData[r].title})的場域下,${
+      r===5?"本來就有張力的組合,今年又遇上最震盪的關係年——「1」想衝,「4」想守,「5」還在推波助瀾。今年是這個組合最需要耐心溝通的一年,關鍵是不要讓節奏不一致演變成互相指責。":
+      r===6?"關係年把兩人都拉向承諾,這對「1+4」是意外的黏合劑——「4」終於得到想要的穩定框架,「1」的新局在「6」的責任感下也有了落地的形狀。今年可能是確認承諾的好時機。":
+      r===7?"「1」的行動欲和「4」的建設欲,在靈性探索年都被按了暫停鍵。今年的主旋律是:為什麼而做?這對這個組合是很好的沉澱機會,但也容易讓「1」感到焦躁。":
+      r===8?"「1」的開創與「4」的執行,在成就導向的關係年形成強大的組合——一個負責方向,一個負責落地,今年可以共同實現很有份量的目標。":
+      "今年的關係場域讓「1」與「4」的張力有了一個容器——速度與步伐的差異依然存在,但關係年的主題給了兩人一個共同聚焦的方向,減少了摩擦。"
+    }`,
+    "1-5": r => `「1」正在開創新局,「5」正渴望自由突破,兩人各自都有強烈的「往外衝」的力量。在關係年${r}(${themeData[r].title})的場域下,${
+      r===6?"看似矛盾,卻是這個組合最有意思的地方:兩個都想飛的人,今年被關係年的承諾能量拉住了。這不是束縛,而是兩股衝勁在這一年找到了共同的降落點——為彼此,為這段關係,選擇留下來。若能接受這個轉化,今年將是這段關係最重要的定錨時刻。":
+      r===7?"三個能量各自要去不同地方——今年關係裡可能出現強烈的若即若離感。需要刻意製造真實相遇的時刻,而不是讓各自的世界把兩人愈拉愈遠。":
+      r===8?"兩個充滿動能的人在成就導向的關係年相遇,若能找到共同目標,這一年的能量可以非常強大。但若各有盤算,衝突也會很激烈。":
+      r===9?"「1」與「5」的衝勁,在業力收尾年被推向一個深刻的問題:我們真正想要的是什麼?今年可能有一些必須誠實面對的時刻,放下才能讓新的開創真正發生。":
+      "今年的關係場域把兩人的個人動能引向同一個主題——「1」與「5」的能量在關係年的容器下找到共同的出口,關鍵是兩人是否願意把這股力量朝向彼此,而非各自為政。"
+    }`,
+    "1-6": r => `「1」渴望開創自我,「6」渴望守護關係,一個想往前衝,一個想把家顧好。在關係年${r}(${themeData[r].title})的場域下,${
+      r===7?"兩人的張力在靈性探索年被推向更深的層次——今年需要各自問自己:我在這段關係裡真正的位置是什麼?給彼此獨處的空間,反而可能帶來更真實的靠近。":
+      r===8?"「1」的開創力與「6」的付出精神,在成就導向的關係年形成有力的搭配——但「6」需要確保自己的付出是被看見的,而非理所當然。今年適合一起談清楚各自的需求與貢獻。":
+      r===6?"同樣是6的能量,關係年把「6」的責任感放大,也把「1」的衝勁引向承諾——今年是這個組合最容易走向正式確認的一年,但「1」需要確認自己是真的準備好了,而非被氛圍推著走。":
+      "今年的關係場域給了這個組合一個重新理解彼此的機會——「1」看見「6」的守護不是束縛,「6」看見「1」的飛翔不是拋棄。若能相互理解,這段關係可以同時擁有自由與溫暖。"
+    }`,
+    "1-7": r => `「1」外放行動,「7」內斂探索,一個向外衝,一個向內走,兩人的節奏截然不同。在關係年${r}(${themeData[r].title})的場域下,${
+      r===8?"「1」的行動力與「7」的深度洞察,在成就導向的關係年可以形成很強的組合——「7」告訴「1」哪條路值得走,「1」把「7」的洞見付諸實踐。今年適合一起做有深度的共同計畫。":
+      r===9?"「1」的開創遇上「7」的靈性,在業力收尾年被推向最根本的問題——這段關係的意義是什麼?今年可能有深刻但不容易的對話,卻是讓兩人真正靠近的契機。":
+      r===2?"今年的情感敏銳度讓「7」的沉默更容易被「1」解讀為疏遠——但這往往是誤解。「1」需要練習不用行動填滿「7」的安靜,「7」需要偶爾開口讓「1」知道:我在,只是在裡面。":
+      "今年的關係場域是這個組合互相學習的好機會——「1」讓「7」不至於太孤立,「7」讓「1」的世界有了靈魂的重量。關鍵是尊重彼此截然不同的節奏。"
+    }`,
+    "1-8": r => `「1」要開創,「8」要掌控成果,兩個強勢數字相遇,能量巨大但也容易正面交鋒。在關係年${r}(${themeData[r].title})的場域下,${
+      r===9?"三個強大的能量在業力收尾年碰撞,今年可能有一些積累已久的張力浮出水面。這不一定是壞事——誠實面對,才能讓這段關係進入下一個更健康的週期。":
+      r===1?"關係年1給了這個組合一個重新出發的機會——若兩人能在這一年對齊方向,把「我的成就」轉化為「我們的成就」,將是整個週期最有力的起點。":
+      r===2?"強勢的組合在情感敏銳年被推向更柔軟的地方——今年最重要的功課是:「8」學習放軟,「1」學習聆聽,讓關係裡有空間不只是「推進」,也有「感受」。":
+      "今年的關係場域給了這兩個強勢能量一個共同的容器——方向一致則能量加乘,方向不一致則摩擦加劇。今年最值得投資的事,是坐下來對齊彼此真正想要的是什麼。"
+    }`,
+    "1-9": r => `「1」代表開始,「9」代表結束,兩者相遇充滿強烈的業力感——舊的正在完成,新的正要萌芽。在關係年${r}(${themeData[r].title})的場域下,${
+      r===1?"業力感在關係年1裡有了具體的出口——今年是這段關係正式從「舊模式」跨入「新週期」的時刻。「9」需要完成放下,「1」需要耐心等待,兩人都準備好了,才能真正同步啟程。":
+      r===9?"「1+9=9」,三個9的能量疊加,今年帶有極強的業力清理色彩。這可能是這段關係最深刻的一年——需要誠實面對真實,放下的越徹底,下一個週期的新開始就越有力量。":
+      r===2?"今年的情感細膩度讓「9」的放下過程被「1」更清楚地感知。「1」需要理解「9」的疏離不是不愛,而是在完成一件靈魂層面的大事。給彼此時間與空間,是今年最重要的禮物。":
+      "今年的關係場域讓「1」與「9」的張力有了一個方向——舊的需要結束,新的才能開始。這個組合在這一年裡,往往能帶來彼此生命中最重要的轉化之一。"
+    }`,
+    "2-2": r => `兩個「2」相遇,情感世界極度豐富,默契可以深到無需言語——但也容易陷入「我以為你懂我」的誤解循環。在關係年${r}(${themeData[r].title})的場域下,${
+      r===4?"情感敏銳的組合在務實年被推向實際行動——今年的功課是把「感受」轉化為「說出來」,再轉化為「做出來」。有話好好說,是兩個「2」今年最重要的練習。":
+      r===6?"兩個都渴望照顧彼此的人,在關係年6裡能量倍增——今年非常適合深化承諾,但也需要注意不要兩人都在付出、卻沒有人說自己真正需要什麼。":
+      r===7?"雙「2」在靈性探索年都退向內心,今年可能出現長時間的沉默與各自的孤獨感。需要刻意製造溫柔的相遇時刻,讓默契不要演變成疏離。":
+      "今年的關係場域放大了雙「2」的情感敏銳度——美好的是深度共鳴,需要注意的是直接說出真實需求,而非期待對方自動感應。"
+    }`,
+    "2-3": r => `「2」的細膩與「3」的歡樂形成溫柔搭配,「3」帶「2」走出內心,「2」給「3」情感深度。在關係年${r}(${themeData[r].title})的場域下,${
+      r===5?"今年關係裡的歡樂可能被一些突如其來的變化打斷——「2」容易因不穩定感到不安,「3」則可能以「玩」來迴避正視。今年需要偶爾認真坐下來,談談兩人真正的感受。":
+      r===6?"輕鬆的組合在承諾年被推向更深的連結——今年「2」渴望的深度情感,與「3」的自然表達,在關係年的推動下有機會形成真實而溫暖的承諾。":
+      r===8?"「2」的溫柔與「3」的魅力,在成就年需要確認自己的情感需求不被外在目標壓過。今年要刻意保護關係裡的溫度,不要讓「忙」成為兩人之間的距離。":
+      "今年的關係場域讓這個溫暖的組合有了共同的主題——「2」與「3」的能量在關係年的容器下互相滋養,是充滿溫情的一年。"
+    }`,
+    "2-4": r => `「2」的情感需求與「4」的穩定可靠相遇,「4」讓「2」感到安全,「2」讓「4」感到被珍視。在關係年${r}(${themeData[r].title})的場域下,${
+      r===6?"這個組合在關係年6裡如魚得水——踏實的愛與情感的深度在這一年完美融合,是非常適合做出承諾或深化現有關係的時機。":
+      r===7?"「4」的務實與關係年的靈性探索之間有些格格不入,「2」則很享受這種沉靜的深度。今年「4」需要跟著「2」一起慢下來,把關係帶向更深的靈魂層次。":
+      r===8?"「4」的執行力在成就年被放大,但「2」需要確保自己的情感需求不被現實目標淹沒。今年需要刻意製造只屬於兩人的溫柔時刻。":
+      "今年的關係場域讓「2」與「4」的踏實組合有了共同的方向——情感與行動在關係年的主題下整合,是一段可以走很遠的組合。"
+    }`,
+    "2-5": r => `「2」渴望穩定深度,「5」渴望自由變化,這是張力最大的組合之一。在關係年${r}(${themeData[r].title})的場域下,${
+      r===7?"張力在靈性探索年被放大,「2」的孤獨感與「5」的疏離感可能同時浮現。今年需要勇氣說出真實感受,而非各自在沉默裡猜測對方的心。":
+      r===3?"今年的輕鬆氛圍是這個組合的緩衝劑——在笑聲與共同活動裡,張力自然降低。但別讓歡樂成為迴避深層對話的藉口。":
+      r===6?"這個組合在關係年6裡面臨最核心的考驗:「5」能否為關係做出承諾,「2」能否給「5」真正的空間?若兩人都能接受這個挑戰,關係年6可以成為這段關係最重要的轉化點。":
+      "今年的關係場域為這個充滿張力的組合提供了一個容器——「2」學習放手,「5」學習回來。這不容易,但每一次選擇留下,都讓這段關係更真實。"
+    }`,
+    "2-6": r => `兩個都重視愛與關係的數字相遇,充滿溫暖、照顧與情感投入。在關係年${r}(${themeData[r].title})的場域下,${
+      r===8?"溫柔的組合在成就年需要一點提醒:外在的忙碌不要讓兩人忘記彼此。今年需要刻意為關係留白,不要讓「我很好」成為委屈的遮羞布。":
+      r===4?"關係年把溫柔的付出引向踏實的建設——今年非常適合把感情的美好轉化為具體的承諾或共同計畫。但需要練習誠實說出真實需求。":
+      r===6?"三個關係導向的能量疊加,今年關係的溫度極高,但也最容易兩人都在付出、沒有人說自己需要什麼。設定一個「我今天需要⋯⋯」的對話習慣,很有幫助。":
+      "今年的關係場域放大了這個溫暖組合的愛——充滿照顧的一年,但記得在給予的同時,也允許自己接受。"
+    }`,
+    "2-7": r => `「2」需要連結,「7」需要獨處,一個在門外等待,一個在裡面沉思。在關係年${r}(${themeData[r].title})的場域下,${
+      r===9?"今年的業力清理讓「7」的沉默有了更深的意義——「2」需要理解,「7」正在完成一件靈魂層面的功課,而不是在逃避這段關係。若「2」能給「7」這份空間,這一年可以成為兩人靈魂連結最深刻的時刻。":
+      r===5?"今年的震盪讓「2」的不安全感與「7」的疏離感都被放大,需要兩人都有意識地製造真實的相遇時刻,而非各自在自己的世界裡漂流。":
+      r===2?"雙重的情感敏銳讓這個組合今年的感知力非常強——「2」能更深地感受到「7」的內在,「7」也能更清楚地看見「2」的需求。是很適合深度溝通的一年。":
+      "今年的關係場域給這個組合一個邀請:「2」給「7」空間,「7」帶著洞見回來。當兩人都接受彼此的節奏,這段關係可以有非常深的靈性底蘊。"
+    }`,
+    "2-8": r => `「2」的溫柔情感與「8」的強大掌控欲之間,存在著微妙的不對等。在關係年${r}(${themeData[r].title})的場域下,${
+      r===1?"關係年的新開始能量給了這個組合重新校準的機會——「8」有意識地放軟,「2」練習說出界限,這一年可以建立一種更平等的互動模式。":
+      r===6?"關係年6強調照顧與責任,「2」的付出在這一年最容易被忽視——「8」需要刻意看見「2」的貢獻,並且主動回應,而非理所當然地接受。":
+      r===9?"業力收尾年把這個組合裡積累的不平衡推向表面——今年若能誠實面對,是重新校準這段關係的珍貴機會;若選擇迴避,這些議題會在下一個週期更用力地敲門。":
+      "今年的關係場域讓「2」與「8」的不對等有了被看見的機會——「8」學習放軟,「2」學習說出界限,是這段關係今年最重要的功課。"
+    }`,
+    "2-9": r => `「2」帶著深厚情感,「9」帶著業力智慧,兩人相遇有強烈的靈魂契約感。在關係年${r}(${themeData[r].title})的場域下,${
+      r===2?"雙重的情感敏銳讓這個組合今年的靈魂連結格外深刻——但「9」的放下過程需要誠實,不要讓「2」用情感的付出去填補「9」還沒清理好的空缺。":
+      r===6?"「2」的陪伴與「9」的智慧,在承諾年遇上一個重要的問題:「9」放下的是舊模式,還是準備放下這段關係本身?這一年需要誠實面對,才能讓「2」的情感投入有清晰的落點。":
+      r===7?"靈性探索年讓這個本來就充滿靈魂感的組合進入更深的頻率——今年兩人的連結可能超越語言,但也需要偶爾回到日常,確認彼此在現實層面的需求。":
+      "今年的關係場域讓「2」的情感與「9」的業力清理交織在一起——「2」是陪伴者,「9」是正在完成功課的人,最重要的是:「9」清楚自己在放下什麼,「2」清楚自己在陪伴什麼。"
+    }`,
+    "3-3": r => `兩個「3」在一起,生活充滿笑聲與創意,輕鬆自在,毫不費力。在關係年${r}(${themeData[r].title})的場域下,${
+      r===6?"今年的承諾能量是這個組合最需要的一點重量——關係年把兩人推向「除了好玩,我們還有什麼?」的問題。若能認真回答,這一年將是這段關係從甜蜜走向深度的轉折點。":
+      r===8?"歡樂的組合在成就年被推向更有目標感的方向——今年若能把兩人的創意與活力聚焦在共同計畫上,可以創造很有份量的成果。但別讓「忙」帶走了輕鬆的笑聲。":
+      r===7?"兩個歡樂的「3」在靈性探索年被推向更深的問題——今年是這段關係罕見的沉澱期,若能接受這份安靜,兩人可能會更深地認識彼此。":
+      "今年的關係場域給了雙「3」一個共同的主題——把歡樂與創意引向具體的方向,讓這段關係在輕鬆之外也有一些深度的落點。"
+    }`,
+    "3-4": r => `「3」的自由散漫與「4」的結構秩序之間有輕微摩擦,一個隨興,一個有計畫。在關係年${r}(${themeData[r].title})的場域下,${
+      r===7?"今年的靈性探索能量反而幫了這個組合——「3」的表面被推向深度,「4」的務實被推向靈魂的提問,兩人在這一年可能比平時更真實地相遇。":
+      r===5?"本來就有節奏差異的組合,今年又遇上最震盪的關係年——「4」的穩定需求在這一年受到最大的考驗,「3」需要比平時多一點收斂,讓「4」有安全感。":
+      r===8?"「3」的創意加上「4」的執行力,在成就年可以形成非常有力的搭配——今年是這個組合把「好想法」變成「真結果」的最佳時機。":
+      "今年的關係場域讓「3」的活力與「4」的踏實找到了共同的出口——「3」讓生活有色彩,「4」讓計畫能落地,在關係年的主題下互相補足。"
+    }`,
+    "3-5": r => `兩個充滿活力、渴望新鮮感的數字相遇,永遠不無聊,但也容易缺乏根基。在關係年${r}(${themeData[r].title})的場域下,${
+      r===8?"兩個動能強大的人在成就年相遇,今年若能找到共同目標,能量非常驚人;若繼續各自玩耍,可能錯失一個把這段關係推向新高度的好機會。":
+      r===4?"輕盈的組合在務實年被推向最不習慣的地方——今年關係年要求的踏實建設,正好是這個組合最需要的補課。能否一起認真對待這段關係,是今年的核心考驗。":
+      r===9?"充滿活力的組合在業力收尾年被推向一個深刻的問題:我們除了「好玩」,還有沒有真正在彼此生命裡紮根?今年是誠實面對這個問題的時刻。":
+      "今年的關係場域給了這個充滿動能的組合一個方向——把活力與冒險引向共同的主題,讓這段關係不只是精彩,也有一點重量。"
+    }`,
+    "3-6": r => `「3」的輕盈與「6」的溫暖責任感形成美好搭配,「6」給「3」一個可以回來的家。在關係年${r}(${themeData[r].title})的場域下,${
+      r===9?"「6」的守護在業力收尾年被推向一個深刻的問題:這份付出,對方真的感受到了嗎?今年需要誠實的對話,讓感情的重量被「3」真正看見。":
+      r===7?"溫暖的組合在靈性探索年都被推向內在——「3」少了平時的歡笑,「6」多了一些孤獨感。今年需要刻意製造深度的相遇,讓關係在沉靜中也有溫度。":
+      r===6?"三個關係導向的能量疊加,今年「6」的承諾能量與「3」的輕盈之間會有一個有趣的拉力——「3」有沒有準備好走向更深的責任?今年是最容易看清楚答案的一年。":
+      "今年的關係場域讓「3」的活力與「6」的溫暖在同一個主題下整合——輕盈與穩重互補,是充滿溫情的一年。"
+    }`,
+    "3-7": r => `「3」外放社交,「7」內斂獨處,一個想熱鬧,一個想安靜。在關係年${r}(${themeData[r].title})的場域下,${
+      r===1?"關係年的新開始能量給了這個組合一個契機——「3」與「7」可以在這一年重新定義彼此在對方生命裡的位置,找到一種尊重彼此節奏的共處方式。":
+      r===4?"今年的務實能量讓「3」的輕盈有了落地的需求,「7」的深度有了實踐的機會。若能一起把想法化為行動,這個組合可以出乎意料地有建設性。":
+      r===9?"靈性探索的「7」在業力收尾年如魚得水,「3」則可能感到一種難以言說的沉重。今年需要「3」跟著「7」一起往內走一點,才能真正相遇。":
+      "今年的關係場域是這個組合互相學習的好機會——「3」把「7」從過深的內省裡拉出來,「7」給「3」一些靈魂的重量。需要尊重彼此截然不同的節奏。"
+    }`,
+    "3-8": r => `「3」帶創意歡樂,「8」帶目標成就欲,一個有才華,一個有能力。在關係年${r}(${themeData[r].title})的場域下,${
+      r===2?"成就導向的組合在情感敏銳年被推向更柔軟的地方——今年最重要的事不是「做了什麼」,而是「感受到什麼」。「8」需要放慢,「3」需要認真。":
+      r===5?"三個動能都很強的能量疊加,今年關係裡的刺激與張力都可能很大。需要刻意確認:我們是在一起前進,還是各自衝刺?":
+      r===7?"亮眼的組合在靈性探索年被推向更深的問題——今年可能有「我們到底要去哪裡?」的時刻浮現。這不是危機,而是這段關係準備走向更有深度的信號。":
+      "今年的關係場域給了「3」與「8」一個共同的舞台——若能把創意與能力聚焦在同一個方向,這個組合可以創造很精彩的成果。但「3」需要確保自己的聲音被聽見。"
+    }`,
+    "3-9": r => `「3」還在享受豐盛,「9」正在準備放下,兩個在不同頻率的靈魂相遇。在關係年${r}(${themeData[r].title})的場域下,${
+      r===3?"今年的輕鬆能量讓「9」的放下不那麼沉重——「3」的笑聲是一種療癒,但需要確保「9」的深層功課沒有被歡樂略過。":
+      r===6?"「3」的輕盈與「9」的智慧,在承諾年遇上一個重要問題:「9」放下的是舊的模式,以便進入這段關係更深的可能;還是放下這段關係本身?今年需要誠實面對。":
+      r===9?"充滿業力的一年——「3」的歡笑與「9」的放下同時並存。這個組合今年可能同時經歷很甜蜜和很沉重的時刻,兩者都是真實的,都需要被接受。":
+      "今年的關係場域讓「3」的歡樂與「9」的業力在同一個容器裡共存——奇妙的互相滋養,但需要「9」不把沉重全部傾倒在「3」身上,也需要「3」偶爾認真陪伴「9」的深層。"
+    }`,
+    "4-4": r => `兩個「4」相遇,踏實可靠,充滿相互理解的穩定感,但容易太保守而缺乏激情。在關係年${r}(${themeData[r].title})的場域下,${
+      r===5?"最穩定的組合遇上最震盪的關係年,今年對雙「4」可能是最不習慣的一年。外在的變化會衝擊兩人熟悉的節奏,但若能一起面對,這段關係將更有韌性。":
+      r===3?"關係年帶來輕鬆與驚喜,正好是雙「4」最需要的調劑——今年嘗試打破日常的規律,讓關係裡出現一些意外的甜蜜時刻。":
+      r===7?"雙「4」在靈性探索年都被推向「為什麼」的問題——今年不只是一起做事,而是一起思考這些事的意義。這對雙「4」是很珍貴的深化機會。":
+      "今年的關係場域讓雙「4」的踏實有了共同的方向——在穩定的根基上,讓關係年的主題帶來一點新的可能。"
+    }`,
+    "4-5": r => `「4」需要穩定,「5」需要自由,這個組合的張力非常明顯。在關係年${r}(${themeData[r].title})的場域下,${
+      r===9?"本來就充滿張力的組合,在業力收尾年被推向最深層的問題——這段關係裡積累的穩定vs自由的拉鋸,今年必須誠實面對。放下不健康的互動模式,才能讓下一個週期更輕盈。":
+      r===6?"「5」的自由欲在承諾年遇上最大的考驗——今年關係年問的是:「5」能否為這段關係做出選擇?若能,「4」渴望的安全感在這一年終於可以成形。":
+      r===2?"今年的情感敏銳度讓「4」的穩定需求與「5」的自由渴望都變得更清晰——需要比平時更多的溫柔溝通,而非用沉默或衝突來處理這個根本的差異。":
+      "今年的關係場域給了這個充滿張力的組合一個容器——「4」學習放手,「5」學習回來。穩定不等於窒息,自由不等於不負責任,今年是練習這個平衡最重要的時機。"
+    }`,
+    "4-6": r => `兩個都重視責任承諾的數字相遇,踏實可靠,充滿長遠安全感。在關係年${r}(${themeData[r].title})的場域下,${
+      r===5?"踏實的組合在震盪年被推向最不習慣的地方——今年的外在變化是考驗,但也是這段關係更新僵化模式的機會。能一起面對變化,這段關係的根基會更深。":
+      r===3?"認真的組合在歡樂年被提醒:關係不需要一直「前進」,偶爾只是在一起玩耍,就很珍貴。今年讓自己輕鬆一點,對這個組合很有滋養。":
+      r===8?"雙重的責任感在成就年被放大——今年很容易把關係經營變成一個「項目」。需要刻意放下評估心態,允許關係有空間只是「存在」。":
+      "今年的關係場域讓雙重的責任感找到了共同的方向——踏實的付出在關係年的主題下得到最好的落點,是可以走很遠的一年。"
+    }`,
+    "4-7": r => `「4」務實腳踏實地,「7」靈性內省,一個關注現實,一個關注意義。在關係年${r}(${themeData[r].title})的場域下,${
+      r===2?"今年的情感敏銳度讓「4」的務實有機會被「7」的深度感染——是很好的互相學習時機。「4」進入「7」的世界多一點,「7」說出自己的感受多一點。":
+      r===6?"「7」的靈性探索在承諾年遇上了一個現實的問題:這段關係,你要不要留下來?今年「7」需要從內在的世界走出來,給「4」一個具體的答案。":
+      r===8?"「7」的洞察力與「4」的執行力,在成就年可以形成很有深度的組合——「7」告訴「4」哪條路值得走,「4」把它實現。是這個組合最有建設性的一年之一。":
+      "今年的關係場域讓「4」的踏實與「7」的靈性有了交匯的空間——務實不只是做事,也是為靈魂的方向服務;探索不只是內在,也需要落地。"
+    }`,
+    "4-8": r => `兩個重視成就與穩定的數字相遇,外看非常有力,但容易讓關係變成「共同項目」。在關係年${r}(${themeData[r].title})的場域下,${
+      r===3?"成就導向的組合在歡樂年被提醒:讓關係裡有一點輕鬆與驚喜,很重要。今年嘗試一起做一些「沒有目標」的事,對這個組合很有療癒效果。":
+      r===9?"雙重的建設能量在業力收尾年被推向深刻的問題——這段關係裡有沒有什麼一直在做卻沒有真正被感受到的付出?今年誠實面對,可以讓關係進入更有溫度的下一個週期。":
+      r===5?"穩定的組合在震盪年遇上最大的外在衝擊——今年的考驗不是做不做得到,而是能不能在變化中保持對彼此的信任,而非把壓力變成對彼此的要求。":
+      "今年的關係場域讓雙重的執行力有了共同的方向——分工明確,互不越界,把彼此視為盟友,是這個組合最好的狀態。"
+    }`,
+    "4-9": r => `「4」在建設,「9」在放下,截然不同的能量相遇,容易產生「一個在蓋,一個在清」的錯位感。在關係年${r}(${themeData[r].title})的場域下,${
+      r===4?"雙重的建設能量,加上「9」的放下——今年的主旋律是:清掉舊的,才能讓新的根基更穩固。「9」需要清楚地說明自己在放下的是什麼,讓「4」不會誤以為自己也在被放下。":
+      r===7?"「9」在靈性探索年如魚得水,「4」則可能感到方向不明。今年需要「4」跟著「9」一起往內走,問問自己:這段關係的意義是什麼,而非只是問接下來要怎麼做。":
+      r===6?"關係年把「4」的建設欲引向承諾,「9」的放下也在清出空間迎接新的責任。若「9」真的完成了放下,這一年兩人可以一起走向一個更踏實的新開始。":
+      "今年的關係場域給了這個錯位組合一個方向——「9」的放下是為了讓「4」的建設有更好的地基,而不是在拆「4」蓋好的東西。清楚溝通,是今年最重要的事。"
+    }`,
+    "5-5": r => `兩個「5」相遇,激情、自由與不可預測,永遠不無聊,但幾乎沒有穩定可言。在關係年${r}(${themeData[r].title})的場域下,${
+      r===4?"最震盪的組合在務實年被推向最不習慣的地方——關係年要求踏實建設,正是雙「5」最需要練習的。今年是這個組合難得的「著陸機會」,能否把自由能量引向共同承諾?":
+      r===6?"雙「5」在承諾年面臨最核心的問題:在兩個都渴望自由的人之間,能否建立一種真實的選擇?關係年6說的不是「被關住」,而是「主動選擇留下」。若兩人都理解這個區別,今年將是這段關係最重要的定錨時刻。":
+      r===9?"三個充滿變動的能量疊加,今年關係裡可能出現最激烈的起伏。但業力收尾年也在問:這段關係裡,有什麼舊的模式需要放下,才能讓自由真正成為滋養而非逃避?":
+      "今年的關係場域給了雙「5」一個共同的方向——把自由與變化的能量引向同一個主題,而非各自飛。在自由中選擇對方,是這個組合最深刻的功課。"
+    }`,
+    "5-6": r => `「5」渴望自由,「6」渴望承諾,這個組合的張力真實而深刻。在關係年${r}(${themeData[r].title})的場域下,${
+      r===2?"今年的情感敏銳度讓「6」的委屈與「5」的不安都更容易被感知——這是進行一次真正深度對話的好時機,說出各自真實的需求,而非猜測對方。":
+      r===7?"「5」的外在動蕩與靈性探索年的內在要求相遇,「6」可能感到一種難以名狀的孤獨。今年「5」需要在奔跑的過程中,偶爾停下來確認「6」還在不在。":
+      r===6?"關係年放大了這個組合最核心的張力:「5」能否選擇留下,給「6」需要的承諾?若「5」願意,這一年將是這段關係最重要的轉化點;若不願意,「6」也需要誠實面對自己的選擇。":
+      "今年的關係場域給了這個充滿張力的組合一個容器——「6」給「5」真正的空間而非控制,「5」願意真實地回來而非逃避。這是這段關係最美好的可能。"
+    }`,
+    "5-7": r => `「5」在外在變化中尋找真實,「7」在內在沉靜中尋找真實,兩人都在找,只是方向不同。在關係年${r}(${themeData[r].title})的場域下,${
+      r===3?"若即若離的組合在歡樂年有了自然靠近的機會——今年在輕鬆的氛圍裡,兩人反而可能不費力地相遇。好好享受,不要把它想得太複雜。":
+      r===8?"「5」的突破力與「7」的洞察力,在成就年可以形成深度與行動並存的強大組合——若能把各自的「真實探索」引向共同目標,今年可以創造很有意義的成果。":
+      r===9?"三個靈性能量的疊加,今年這段關係可能進入最深刻也最不容易的頻率——但若兩人都有足夠的意識,這一年可以成為彼此生命中最重要的靈魂相遇之一。":
+      "今年的關係場域給了這個充滿靈性氛圍的組合一個主題——兩人的「尋找真實」有機會指向同一個方向。刻意製造相遇的時刻,讓若即若離變成真實的靠近。"
+    }`,
+    "5-8": r => `「5」帶著自由渴望,「8」帶著強勢掌控欲,能量強大,衝突也可能激烈。在關係年${r}(${themeData[r].title})的場域下,${
+      r===4?"震盪的組合在務實年被要求落地——今年是「5」與「8」少見的踏實建設機會。若能把衝突的能量轉化為共同目標的執行力,這一年可以有非常紮實的成果。":
+      r===6?"「8」的掌控欲與關係年的承諾能量疊加,「5」可能感到雙重的壓力。今年最重要的是:承諾不等於失去自由,「8」需要讓「5」真正相信這一點,而非只是要求。":
+      r===9?"強大的能量在業力收尾年被推向一個深刻的問題:誰有權力定義這段關係的形狀?今年若能誠實面對這個問題,可以讓下一個週期的相處模式更平等。":
+      "今年的關係場域給了這個衝突能量一個方向——若能對齊,力量驚人;若無法對齊,今年是最清楚看見分歧的時刻。衝突不是壞事,是釐清的機會。"
+    }`,
+    "5-9": r => `「5」在變化中,「9」在轉換中,兩個都在「過渡」的靈魂相遇,充滿業力感。在關係年${r}(${themeData[r].title})的場域下,${
+      r===5?"三個轉換的能量疊加,今年這段關係裡的不穩定感可能達到頂點——但這不一定是壞事。兩人都在蛻變,若能一起面對這個過渡,將成為彼此最重要的見證者。":
+      r===6?"「9」正在放下舊模式,「5」正在突破舊框架,關係年問的是:這些放下與突破,最終是朝向彼此,還是朝向遠離?今年需要誠實面對這個問題。":
+      r===2?"在過渡期相遇的兩人,今年被情感敏銳度放大了一切——「5」的不定與「9」的放下都更容易被感知。需要比平時更多的溫柔與耐心對待彼此。":
+      "今年的關係場域讓兩個都在轉換中的靈魂有了共同的主題——「9」的智慧告訴「5」放下之後還有新的可能,「5」的希望告訴「9」改變不只是失去。這是一個可以互相滋養的過渡期。"
+    }`,
+    "6-6": r => `兩個「6」在一起,充滿溫暖與照顧,但容易兩人都在付出、沒有人說出真實需求。在關係年${r}(${themeData[r].title})的場域下,${
+      r===5?"溫暖的組合在震盪年面臨考驗——今年的外在變化會衝擊兩人習慣的照顧模式。最重要的是:在動盪中,說出自己真正需要的,而非繼續「我很好,你呢?」。":
+      r===8?"雙重的付出精神在成就年容易被外在忙碌稀釋——今年需要刻意為關係留白,確保對彼此的照顧不只停留在「沒事吧」的層次。":
+      r===7?"溫柔的組合在靈性探索年都退向內心,可能出現一種溫和的疏離——兩人都在,但不太說話。今年需要刻意製造深度的對話時刻。":
+      "今年的關係場域放大了雙「6」的溫暖能量——最好的狀態是設立一個習慣:定期說出「我現在需要的是⋯⋯」,讓付出變得更精準,也更被接住。"
+    }`,
+    "6-7": r => `「6」渴望具體的愛與陪伴,「7」渴望內在的獨處與探索,充滿溫柔的誤解。在關係年${r}(${themeData[r].title})的場域下,${
+      r===2?"今年的情感敏銳度讓「6」更容易感知「7」的細微變化,也讓誤解更容易被放大。需要比平時更多的直接溝通——「7」說出我需要安靜,不代表我不愛你;「6」說出我需要陪伴,不代表我在控制你。":
+      r===4?"關係年的務實能量幫了這個組合——今年「7」被推向具體行動,「6」也有了落地的框架。是讓靈性探索與日常照顧找到平衡的好時機。":
+      r===9?"「7」的靈性探索在業力收尾年進入最深的頻率,「6」可能感到一種難以觸及的距離感。今年的主旋律是:「6」給「7」完成這份靈魂功課所需的空間,「7」記得回來讓「6」知道:你不是一個人。":
+      "今年的關係場域給了這個充滿溫柔誤解的組合一個機會——若能真正理解彼此的愛的語言,「6」的陪伴與「7」的靈魂連結可以形成非常豐富的關係。"
+    }`,
+    "6-8": r => `「6」重視愛與家庭,「8」重視成就與掌控,兩個對關係都有強烈期待的數字相遇。在關係年${r}(${themeData[r].title})的場域下,${
+      r===7?"成就與家庭的組合在靈性探索年被推向更深的問題——今年不是「做了什麼」,而是「這些做的事,對我們的關係來說,真正重要的是什麼?」是這個組合難得的深化機會。":
+      r===5?"「8」的掌控欲與「6」的付出精神,在震盪年都面臨考驗——今年最需要的是彈性與溝通,不要讓外在的不穩定演變成內在的相互指責。":
+      r===9?"積累的不平衡在業力收尾年浮出水面——「6」的付出是否真的被「8」看見?今年若能誠實面對,是重新校準這段關係最好的機會。":
+      "今年的關係場域給了這個組合一個清晰的問題:各自的付出與成就,能否在關係裡彼此支持,而非相互競爭?今年是讓答案變得清晰的一年。"
+    }`,
+    "6-9": r => `「6」在建設承諾,「9」在放下完結,充滿深刻的業力意味。在關係年${r}(${themeData[r].title})的場域下,${
+      r===6?"關係年的承諾能量讓這個組合面臨最核心的問題:「9」放下的是什麼?若是舊的模式,「6」的出現代表一個美好的新開始;若「9」還沒清空,今年需要誠實面對,而非讓「6」用愛去填補「9」的空缺。":
+      r===8?"「9」的放下在成就年有了現實的重量——今年「9」需要把放下轉化為具體的行動,讓「6」看見這段關係有清晰的走向,而非停留在抽象的「我在改變」。":
+      r===4?"踏實的關係年讓「6」的建設欲得到滿足,也讓「9」的放下有了落地的方式——今年是這個組合把「準備好了」化為「開始了」的好時機。":
+      "今年的關係場域讓「6」與「9」的張力有了方向——放下舊的,才能讓新的承諾真正站穩。今年最重要的事,是確認兩人站在同一條起跑線上。"
+    }`,
+    "7-7": r => `兩個「7」相遇,靈魂連結可以非常深刻,但容易長時間沉默與各自內省,忘記主動維繫關係的溫度。在關係年${r}(${themeData[r].title})的場域下,${
+      r===3?"雙「7」在歡樂年被推向外部——今年是難得的走出各自內在宇宙的機會。一起做一些輕鬆有趣的事,讓靈魂連結在笑聲裡也能找到。":
+      r===5?"靈性深度的組合在震盪年面臨最大的外在衝擊——今年需要從各自的內在走出來,一起面對現實的變化。沉默可以是默契,但不能是逃避。":
+      r===6?"雙「7」在承諾年被推向一個具體的問題:靈魂連結之外,這段關係在現實層面要如何落地?今年需要從深度對話走向實際行動。":
+      "今年的關係場域給了雙「7」一個邀請——從各自的內在宇宙走出來,製造真實的相遇時刻。靈魂默契是這段關係最美的地方,但需要偶爾回到日常,確認溫度還在。"
+    }`,
+    "7-8": r => `「7」問意義,「8」問成就,靈性探索與世俗目標之間有深刻的哲學張力。在關係年${r}(${themeData[r].title})的場域下,${
+      r===6?"今年的承諾能量讓這個組合面臨一個重要問題:我們在為什麼而建立這段關係?「7」帶來意義,「8」帶來能力,在關係年6的框架下,兩人有機會建立一段既有靈魂深度又有現實根基的關係。":
+      r===2?"「8」的強勢在情感敏銳年被放大了——今年「7」的感知力很強,「8」的每一個行動都會被「7」深刻地感受到。這是「8」有意識地放軟、建立真實信任的好時機。":
+      r===4?"「7」的洞察與「8」的執行力,在務實年形成非常強大的組合——今年把「為什麼」轉化為「怎麼做」,這個組合可以創造既有深度又有現實份量的成果。":
+      "今年的關係場域讓「7」的意義探索與「8」的成就欲有了交匯——若能互相學習,「7」讓「8」的成功有靈魂底蘊,「8」讓「7」的智慧有現實的落腳點,這段關係可以非常深刻而有力。"
+    }`,
+    "7-9": r => `兩個靈性數字相遇,都在靈魂最深處進行重要的功課——「7」在探索,「9」在收尾。在關係年${r}(${themeData[r].title})的場域下,${
+      r===7?"三個靈性能量疊加,今年這段關係進入最深沉、最神秘的頻率。可能有很多無聲的理解,也可能有很深的孤獨。需要刻意製造語言的橋樑,讓靈魂連結也能在日常裡被感受到。":
+      r===8?"靈性組合在成就年被推向現實——今年「7」與「9」的深度探索需要找到落地的出口。「7」告訴「9」這份洞察如何服務現實,「9」的智慧讓「8」的成就有了更深的意義。":
+      r===6?"靈性深度的組合在承諾年面臨一個問題:靈魂的連結,能否轉化為現實的選擇?今年是讓深度變得具體的機會——不只是感應彼此,而是選擇彼此。":
+      "今年的關係場域讓這段充滿靈魂重量的關係有了共同的主題——這不是一段輕鬆的關係,卻可能是改變兩人生命走向最重要的相遇之一。"
+    }`,
+    "8-8": r => `兩個「8」相遇,若方向一致則所向披靡,若各自為政則是最激烈的權力鬥爭。在關係年${r}(${themeData[r].title})的場域下,${
+      r===2?"強勢的組合在情感敏銳年被推向最不習慣的地方——今年最重要的功課不是「做了什麼」,而是「感受到什麼」。兩個「8」都需要練習放下掌控,讓情感真正流動。":
+      r===5?"三個強大的能量在震盪年碰撞,今年可能是這個組合能量最激烈的一年。衝突與突破並存——若能把能量對齊,可以共同面對最大的挑戰;若無法,這一年可能出現最激烈的正面交鋒。":
+      r===7?"成就導向的組合在靈性探索年被問:這些追求,到底為了什麼?今年是雙「8」少見的深化機會——從「我們能成就什麼」走向「這一切對我們來說意味著什麼」。":
+      "今年的關係場域給了雙「8」一個清晰的問題:能否把彼此視為戰略夥伴,而非競爭對手?今年是這個組合能量加乘或相互消耗的關鍵一年。"
+    }`,
+    "8-9": r => `「8」在追求成就,「9」在學習放下,充滿深刻的業力與轉化能量。在關係年${r}(${themeData[r].title})的場域下,${
+      r===8?"雙重的成就能量加上「9」的業力清理——今年「9」的放下可能直接影響「8」追求的方向。若「9」能清楚放下的是什麼,「8」的行動力可以幫助把新的空間填入有意義的目標。":
+      r===9?"三個收尾能量疊加,今年這段關係帶有極強的業力清理色彩——「9」的智慧讓「8」看清哪些成就是真正值得的,「8」的行動力幫助「9」把放下後的空間填入新的可能。":
+      r===6?"「9」的放下在承諾年遇上了一個具體的問題:放下之後,你願意留在這段關係裡承擔責任嗎?今年需要「9」給「8」一個清晰的答案,而「8」需要真正聽進去。":
+      "今年的關係場域讓「8」的追求與「9」的放下找到了交匯——「9」告訴「8」哪些值得追求,「8」幫助「9」把智慧落地。若兩人都有足夠的自我意識,這是一個深刻轉化的組合。"
+    }`,
+    "9-9": r => `兩個「9」相遇,最充滿業力、也最充滿智慧的組合,兩人都攜帶深厚的靈魂課題。在關係年${r}(${themeData[r].title})的場域下,${
+      r===9?"三個9的能量疊加,今年這段關係可能進入整個九年週期中最深刻、最不容易也最重要的時刻。需要放下的,必須放下;需要面對的,無法迴避。但放下之後的空間,將是最純粹的新開始。":
+      r===1?"業力深厚的組合在新開始年看到了光——今年有機會從放下轉向出發。兩個「9」若能完成各自的功課,這一年的關係年1將成為真正意義上的新週期起點。":
+      r===6?"雙重的業力清理在承諾年遇上一個問題:放下舊的之後,我們能否選擇彼此,重新建立一段更真實的連結?今年是這段關係從清理走向承諾的關鍵時刻。":
+      "今年的關係場域讓雙「9」的業力清理有了共同的方向——兩人互相幫助完成靈魂層面最重要的功課,這不是一段輕鬆的關係,卻可能是彼此這輩子最重要的相遇之一。"
+    }`,
+  };
+
+  function getCombo(a, b, rel){
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    const fn = comboData[`${lo}-${hi}`];
+    return fn ? fn(rel) : '';
+  }
+
+  // 切換模式
+  function updateModeUI(){
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const cont = $('yearInputs');
+    const modeRow = document.querySelector('.mode-row');
+    const birthday = $('birthdayBlock');
+
+    // 切換 tab active
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      const isActive = tab.querySelector('input[type="radio"]').checked;
+      tab.classList.toggle('active', isActive);
+    });
+
+    if (mode === 'single') {
+      cont.innerHTML = `<div class="field"><label>查詢年</label><input type="number" id="fy" placeholder="" value="${$('fy')?.value || ''}" /></div>`;
+      modeRow.classList.remove('no-fy');
+      birthday.classList.remove('manual-mode');
+    } else if (mode === 'range') {
+      cont.innerHTML = `
+        <div class="field"><label>起始年</label><input type="number" id="fyStart" placeholder="" /></div>
+        <div class="year-arrow">→</div>
+        <div class="field"><label>結束年</label><input type="number" id="fyEnd" placeholder="" /></div>
+      `;
+      modeRow.classList.remove('no-fy');
+      birthday.classList.remove('manual-mode');
+    } else if (mode === 'manual') {
+      cont.innerHTML = '';
+      modeRow.classList.add('no-fy');
+      birthday.classList.add('manual-mode');
+    }
+  }
+  document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', updateModeUI));
+  // 初始化模式 UI(套用 HTML 預設 checked 的狀態)
+  updateModeUI();
+
+  function renderTags(arr, cls){
+    return arr.map(x => `<span class="tag ${cls}">${x}</span>`).join('');
+  }
+
+  function renderCard(num){
+    const d = themeData[num];
+    if (!d) return '';
+    return `
+      <div class="relation-section">
+        <div class="section-eyebrow">✦ 關係年</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="num-circle">${num}</div>
+            <div class="card-title-block">
+              <div class="card-en-title">${d.en}</div>
+              <div class="card-title">${d.title}</div>
+            </div>
+          </div>
+          <div class="card-desc">${d.desc}</div>
+          <div class="card-rows">
+            <div class="card-row">
+              <div class="row-label">核心關鍵字</div>
+              <div class="tags">${renderTags(d.key, 'tag-key')}</div>
+            </div>
+            <div class="card-row">
+              <div class="row-label">適合做</div>
+              <div class="tags">${renderTags(d.good, 'tag-good')}</div>
+            </div>
+            <div class="card-row">
+              <div class="row-label">需注意</div>
+              <div class="tags">${renderTags(d.warn, 'tag-warn')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPersonalPair(py1, py2){
+    const p1 = personalData[py1];
+    const p2 = personalData[py2];
+    return `
+      <div class="personal-section">
+        <div class="section-eyebrow">✦ 個人流年</div>
+        <div class="personal-grid">
+          <div class="personal-card">
+            <div class="personal-header">
+              <div class="p-num">${py1}</div>
+              <div class="p-who">自己 · 個人流年 ${py1}</div>
+            </div>
+            <div class="p-en">${p1.en}</div>
+            <div class="p-title">${p1.title}</div>
+            <div class="p-desc">${p1.desc}</div>
+          </div>
+          <div class="personal-card">
+            <div class="personal-header">
+              <div class="p-num">${py2}</div>
+              <div class="p-who">對方 · 個人流年 ${py2}</div>
+            </div>
+            <div class="p-en">${p2.en}</div>
+            <div class="p-title">${p2.title}</div>
+            <div class="p-desc">${p2.desc}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCombo(py1, py2, rel){
+    const combo = getCombo(py1, py2, rel);
+    if (!combo) return '';
+    const lo = Math.min(py1, py2), hi = Math.max(py1, py2);
+    return `
+      <div class="combo-section">
+        <div class="section-eyebrow">✦ ${py1} × ${py2} → 關係年 ${rel} 的組合動態</div>
+        <div class="combo-box">
+          <div class="combo-label">當「${lo}」遇上「${hi}」,在關係年 ${rel} 的場域下</div>
+          <div class="combo-desc">${combo}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSingle(y1, m1, d1, y2, m2, d2, fy){
+    const py1 = calcPersonalYear(m1, d1, fy);
+    const py2 = calcPersonalYear(m2, d2, fy);
+    const rel = calcRelation(py1, py2);
+    const d = themeData[rel] || {};
+    return `
+      <div class="summary-bar">
+        <div class="summary-item">
+          <div class="sm-lab">${fy} 自己流年</div>
+          <div class="sm-val">${py1}</div>
+          <div class="sm-formula">${m1}/${d1} · ${fy}</div>
+        </div>
+        <div class="summary-eq">+</div>
+        <div class="summary-item">
+          <div class="sm-lab">${fy} 對方流年</div>
+          <div class="sm-val">${py2}</div>
+          <div class="sm-formula">${m2}/${d2} · ${fy}</div>
+        </div>
+        <div class="summary-eq">=</div>
+        <div class="summary-item relation">
+          <div class="sm-lab">關係年</div>
+          <div class="sm-val">${rel}</div>
+          <div class="sm-formula">${py1}+${py2}${py1+py2 !== rel ? `=${py1+py2}→${rel}` : ''}</div>
+        </div>
+      </div>
+      ${renderPersonalPair(py1, py2)}
+      ${renderCard(rel)}
+      ${renderCombo(py1, py2, rel)}
+    `;
+  }
+
+  function renderRange(y1, m1, d1, y2, m2, d2, start, end){
+    let chips = '';
+    for (let yr = start; yr <= end; yr++) {
+      const py1 = calcPersonalYear(m1, d1, yr);
+      const py2 = calcPersonalYear(m2, d2, yr);
+      const rel = calcRelation(py1, py2);
+      const d = themeData[rel] || {};
+      const shortTitle = (d.title || '').split('·')[0].trim();
+      chips += `
+        <button class="year-chip" data-year="${yr}" data-py1="${py1}" data-py2="${py2}" data-rel="${rel}">
+          <div class="chip-year">${yr}</div>
+          <div class="chip-formula">
+            <span class="cf-self">${py1}</span>
+            <span class="cf-op">+</span>
+            <span class="cf-other">${py2}</span>
+          </div>
+          <div class="chip-num">${rel}</div>
+          <div class="chip-title">${shortTitle}</div>
+        </button>
+      `;
+    }
+    return `
+      <div class="range-hint">點任一年展開完整關係能量解讀</div>
+      <div class="year-chips">${chips}</div>
+      <div class="range-detail" id="rangeDetail"></div>
+    `;
+  }
+
+  function bindRowToggle(){
+    const chips = document.querySelectorAll('.year-chip');
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const wasActive = chip.classList.contains('active');
+        chips.forEach(c => c.classList.remove('active'));
+        const detail = document.getElementById('rangeDetail');
+        if (wasActive) {
+          // 再點一次收合
+          detail.innerHTML = '';
+          detail.classList.remove('show');
+          return;
+        }
+        chip.classList.add('active');
+        const yr = +chip.dataset.year;
+        const py1 = +chip.dataset.py1;
+        const py2 = +chip.dataset.py2;
+        const rel = +chip.dataset.rel;
+        // 完整展開:摘要 + 個人流年 + 關係年卡 + 組合動態
+        detail.innerHTML = `
+          <div class="detail-header">${yr} 年 · 關係能量解讀</div>
+          <div class="summary-bar">
+            <div class="summary-item">
+              <div class="sm-lab">${yr} 自己流年</div>
+              <div class="sm-val">${py1}</div>
+            </div>
+            <div class="summary-eq">+</div>
+            <div class="summary-item">
+              <div class="sm-lab">${yr} 對方流年</div>
+              <div class="sm-val">${py2}</div>
+            </div>
+            <div class="summary-eq">=</div>
+            <div class="summary-item relation">
+              <div class="sm-lab">關係年</div>
+              <div class="sm-val">${rel}</div>
+              <div class="sm-formula">${py1}+${py2}${py1+py2 !== rel ? `=${py1+py2}→${rel}` : ''}</div>
+            </div>
+          </div>
+          ${renderPersonalPair(py1, py2)}
+          ${renderCard(rel)}
+          ${renderCombo(py1, py2, rel)}
+        `;
+        detail.classList.add('show');
+        // 滾到展開區
+        setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+      });
+    });
+  }
+
+  function run(){
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const out = $('result');
+
+    // 自由試算模式 — 按鈕已隱藏,但防護一下
+    if (mode === 'manual') return;
+
+    const y1 = +$('y1').value, m1 = +$('m1').value, d1 = +$('d1').value;
+    const y2 = +$('y2').value, m2 = +$('m2').value, d2 = +$('d2').value;
+
+    if (!m1 || !d1 || !m2 || !d2) {
+      out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>請填入雙方的月與日</div></div>';
+      return;
+    }
+    if (m1 < 1 || m1 > 12 || d1 < 1 || d1 > 31 || m2 < 1 || m2 > 12 || d2 < 1 || d2 > 31) {
+      out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>月份或日期超出範圍</div></div>';
+      return;
+    }
+
+    if (mode === 'single') {
+      const fy = +$('fy').value;
+      if (!fy) {
+        out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>請填入查詢年</div></div>';
+        return;
+      }
+      out.innerHTML = renderSingle(y1, m1, d1, y2, m2, d2, fy);
+    } else {
+      const start = +$('fyStart').value;
+      const end = +$('fyEnd').value;
+      if (!start || !end) {
+        out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>請填入起始與結束年</div></div>';
+        return;
+      }
+      if (start > end) {
+        out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>起始年要早於結束年</div></div>';
+        return;
+      }
+      if (end - start > 50) {
+        out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>範圍最多 50 年</div></div>';
+        return;
+      }
+      out.innerHTML = renderRange(y1, m1, d1, y2, m2, d2, start, end);
+      bindRowToggle();
+    }
+  }
+
+  $('calc').addEventListener('click', run);
+  ['y1','m1','d1','y2','m2','d2','fy'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+  });
+
+  // === 自由選個人年組合(manual pick)===
+  (function initManualPick(){
+    let mpA = null, mpB = null;
+
+    // 生成 1-9 按鈕
+    document.querySelectorAll('.mp-btns').forEach(container => {
+      const side = container.dataset.side;
+      for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mp-num';
+        btn.textContent = i;
+        btn.dataset.n = i;
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.mp-num').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (side === 'a') mpA = i; else mpB = i;
+          updateMpResult();
+        });
+        container.appendChild(btn);
+      }
+    });
+
+    function updateMpResult(){
+      const out = $('result');
+      if (!mpA || !mpB) {
+        out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>選擇兩人的個人流年數字</div></div>';
+        return;
+      }
+      const rel = calcRelation(mpA, mpB);
+      // 寫到 result 區:summary-bar + 個人流年 + 關係年主題 + 組合動態
+      out.innerHTML = `
+        <div class="summary-bar">
+          <div class="summary-item">
+            <div class="sm-lab">自己流年</div>
+            <div class="sm-val">${mpA}</div>
+          </div>
+          <div class="summary-eq">+</div>
+          <div class="summary-item">
+            <div class="sm-lab">對方流年</div>
+            <div class="sm-val">${mpB}</div>
+          </div>
+          <div class="summary-eq">=</div>
+          <div class="summary-item relation">
+            <div class="sm-lab">關係年</div>
+            <div class="sm-val">${rel}</div>
+            <div class="sm-formula">${mpA}+${mpB}${mpA+mpB !== rel ? `=${mpA+mpB}→${rel}` : ''}</div>
+          </div>
+        </div>
+        ${renderPersonalPair(mpA, mpB)}
+        ${renderCard(rel)}
+        ${renderCombo(mpA, mpB, rel)}
+      `;
+    }
+
+    // 切換模式時若進入 manual 且已選 → 重新渲染;若離開 manual → 不變動 result
+    document.querySelectorAll('input[name="mode"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        if (mode === 'manual') {
+          if (mpA && mpB) updateMpResult();
+          else {
+            const out = $('result');
+            out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>選擇兩人的個人流年數字</div></div>';
+          }
+        } else {
+          // 切回有生日的模式 → 清空結果區回到預設
+          const out = $('result');
+          out.innerHTML = '<div class="empty-state"><div class="marker">✦ ✦ ✦</div><div>填入雙方生日與年份,按計算</div></div>';
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
