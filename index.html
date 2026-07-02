@@ -20,6 +20,8 @@
     --line: rgba(15, 30, 58, 0.18);
     --line-soft: rgba(15, 30, 58, 0.10);
     --vowel: #b7384c;
+    --vowel-mid: #d18590;
+    --vowel-soft: #e0acb4;
     --band-prev: #b8cce4;
     --band-next: #1e4a8a;
     --serif-en: 'Cormorant Garamond', serif;
@@ -136,7 +138,25 @@
     color: var(--ink-soft);
     letter-spacing: 0.25em;
     line-height: 1.1;
-    font-weight: 500;
+    font-weight: 700;
+  }
+  .slot .reduction {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-dim);
+    margin-top: 6px;
+    line-height: 1;
+    min-height: 13px;
+  }
+  .slot .reduction .arrow {
+    color: var(--ink-dimmer);
+    margin: 0 3px;
+    font-weight: 400;
+  }
+  .slot .reduction .final {
+    color: var(--vowel-soft);
+    font-weight: 700;
   }
   .slot .val {
     font-family: var(--mono);
@@ -150,11 +170,11 @@
     font-family: var(--mono);
     font-weight: 600;
     font-size: 12px;
-    color: var(--ink-dim);
+    color: var(--vowel-mid);
     margin-top: 6px;
     line-height: 1.1;
     letter-spacing: 0.08em;
-    opacity: 0.85;
+    opacity: 0.95;
   }
   .slot .yr {
     font-family: var(--mono);
@@ -171,25 +191,17 @@
     background: rgba(30, 74, 138, 0.08);
   }
 
-  /* 月日年中央列:原數字 + 化約過程(從第二步開始,中間淺色,最終深藍) */
+  /* 月日年中央列:小字進位過程(在上) + 大字最終單位數(在下,酒紅) */
   .slot.center { min-width: 92px; padding: 4px 6px; background: transparent; }
-  .slot.center .lbl-tc { color: var(--ink-soft); font-weight: 500; }
-  .slot.center .val-raw {
-    font-family: var(--mono);
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--accent-strong);
-    margin-top: 4px;
-    line-height: 1;
-  }
+  .slot.center .lbl-tc { color: var(--ink-soft); font-weight: 700; }
   .slot.center .reduction {
     font-family: var(--mono);
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--ink-dim);
-    margin-top: 3px;
+    margin-top: 6px;
     line-height: 1;
-    min-height: 15px;
+    min-height: 13px;
   }
   .slot.center .reduction .arrow {
     color: var(--ink-dimmer);
@@ -197,8 +209,26 @@
     font-weight: 400;
   }
   .slot.center .reduction .final {
-    color: var(--vowel);
+    color: var(--vowel-soft);
     font-weight: 700;
+  }
+  .slot.center .val-final {
+    font-family: var(--mono);
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--vowel);
+    margin-top: 6px;
+    line-height: 1;
+  }
+  .slot.center .raw-birth {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 6px;
+    line-height: 1.1;
+    letter-spacing: 0.08em;
+    opacity: 0.95;
   }
 
   /* === 右欄 === */
@@ -898,7 +928,8 @@
   /* === Placeholder 預覽模式 === */
   body.placeholder-mode .ki-cell .num,
   body.placeholder-mode .slot .val,
-  body.placeholder-mode .slot .val-raw,
+  body.placeholder-mode .slot .val-final,
+  body.placeholder-mode .slot .raw-birth,
   body.placeholder-mode .slot .reduction,
   body.placeholder-mode .slot .reduction .arrow,
   body.placeholder-mode .slot .reduction .final,
@@ -910,19 +941,20 @@
   body.placeholder-mode .tl-cell .v,
   body.placeholder-mode .letter-stack .num,
   body.placeholder-mode .letter-stack .ch,
-  body.placeholder-mode .month-note {
+  body.placeholder-mode .band-num {
     color: transparent !important;
     position: relative;
   }
   body.placeholder-mode .slot .reduction * { color: transparent !important; }
   body.placeholder-mode .ki-cell .num::after,
   body.placeholder-mode .slot .val::after,
-  body.placeholder-mode .slot .val-raw::after,
+  body.placeholder-mode .slot .val-final::after,
   body.placeholder-mode .slot .reduction::after,
   body.placeholder-mode .name-item .nval::after,
   body.placeholder-mode .month-cell .pm-num::after,
   body.placeholder-mode .tl-cell .v::after,
-  body.placeholder-mode .letter-stack .num::after {
+  body.placeholder-mode .letter-stack .num::after,
+  body.placeholder-mode .band-num::after {
     content: '✦';
     position: absolute;
     inset: 0;
@@ -934,6 +966,8 @@
     font-size: 0.9em;
     opacity: 0.7;
   }
+  body.placeholder-mode .band-num { display: inline-block; min-width: 0.7em; }
+  body.placeholder-mode .month-note { color: var(--ink-dimmer); opacity: 0.7; }
   body.placeholder-mode .name-section .name-display { opacity: 0.4; }
   body.placeholder-mode .ki-cell.row-bot { background: rgba(15, 30, 58, 0.04); }
   body.placeholder-mode .slot.current { background: transparent; }
@@ -1065,8 +1099,9 @@
     .slot { min-width: 60px; padding: 4px 4px; }
     .slot .val { font-size: 28px; }
     .slot.center { min-width: 70px; }
-    .slot.center .val-raw { font-size: 22px; }
-    .slot.center .reduction { font-size: 12px; }
+    .slot.center .val-final { font-size: 28px; }
+    .slot.center .raw-birth { font-size: 10px; }
+    .slot.center .reduction { font-size: 10px; }
     .slot .lbl-tc { font-size: 11px; letter-spacing: 0.15em; }
     .slot .age, .slot .yr { font-size: 10px; }
 
@@ -1364,14 +1399,22 @@
       const py = (mm < startThis) ? pyPrev : pyThis;
       monthMap.push({ m: mm, py, pm: reduce(py + mm), isStart: (mm === startThis) });
     }
-    const p1 = reduce(rm + rd);
-    const p2 = reduce(rd + ry);
-    const p3 = reduce(p1 + p2);
-    const p4 = reduce(rm + ry);
-    const c1 = Math.abs(rm - rd);
-    const c2 = Math.abs(rd - ry);
-    const c3 = Math.abs(c1 - c2);
-    const c4 = Math.abs(rm - ry);
+    const p1Steps = reduceWithSteps(rm + rd);
+    const p2Steps = reduceWithSteps(rd + ry);
+    const p1 = p1Steps.final;
+    const p2 = p2Steps.final;
+    const p3Steps = reduceWithSteps(p1 + p2);
+    const p4Steps = reduceWithSteps(rm + ry);
+    const p3 = p3Steps.final;
+    const p4 = p4Steps.final;
+    const c1Steps = reduceWithSteps(Math.abs(rm - rd));
+    const c2Steps = reduceWithSteps(Math.abs(rd - ry));
+    const c1 = c1Steps.final;
+    const c2 = c2Steps.final;
+    const c3Steps = reduceWithSteps(Math.abs(c1 - c2));
+    const c4Steps = reduceWithSteps(Math.abs(rm - ry));
+    const c3 = c3Steps.final;
+    const c4 = c4Steps.final;
     const e1 = 36 - lifePath, e2 = e1 + 9, e3 = e2 + 9;
     const stages = [
       { ageRange: `0-${e1}歲`, yearRange: `${y}-${y+e1}` },
@@ -1408,24 +1451,28 @@
       y, m, d, fy, ry, rm, rd, lifePath, conditioning,
       pyThis, pyPrev, startThis, startPrev, monthMap,
       peaks: [p1, p2, p3, p4],
+      peakSteps: [p1Steps, p2Steps, p3Steps, p4Steps],
       challenges: [c1, c2, c3, c4],
+      challengeSteps: [c1Steps, c2Steps, c3Steps, c4Steps],
       stages, age, currentStage, timeline,
       groups: groups || [], nameNums,
       rySteps, rmSteps, rdSteps
     };
   }
 
-  function peakSlot(labelTc, val, stage, isCurrent){
+  function peakSlot(labelTc, val, stage, isCurrent, steps){
     return `<div class="slot${isCurrent ? ' current' : ''}">
       <div class="lbl-tc">${labelTc}</div>
+      <div class="reduction">${steps ? stepsHTML(steps) : '&nbsp;'}</div>
       <div class="val">${val}</div>
       <div class="age">${stage.ageRange}</div>
       <div class="yr">${stage.yearRange}</div>
     </div>`;
   }
-  function challengeSlot(labelTc, val, stage, isCurrent){
+  function challengeSlot(labelTc, val, stage, isCurrent, steps){
     return `<div class="slot${isCurrent ? ' current' : ''}">
       <div class="lbl-tc">${labelTc}</div>
+      <div class="reduction">${steps ? stepsHTML(steps) : '&nbsp;'}</div>
       <div class="val">${val}</div>
       <div class="age">${stage.ageRange}</div>
       <div class="yr">${stage.yearRange}</div>
@@ -1461,10 +1508,10 @@
     const v = vals || { y: '', m: '', d: '', fy: '', fullname: '' };
     return `<div class="topbar">
       <div class="controls">
-        <div class="field"><label>出生年</label><input type="number" id="y" class="year" value="${v.y}" placeholder="" /></div>
+        <div class="field"><label>出生西元</label><input type="number" id="y" class="year" value="${v.y}" placeholder="" /></div>
         <div class="field"><label>出生月</label><input type="number" id="m" value="${v.m}" placeholder="" /></div>
         <div class="field"><label>出生日</label><input type="number" id="d" value="${v.d}" placeholder="" /></div>
-        <div class="field"><label>西元年</label><input type="number" id="fy" class="year" value="${v.fy}" placeholder="" /></div>
+        <div class="field"><label>查詢年份</label><input type="number" id="fy" class="year" value="${v.fy}" placeholder="" /></div>
         <div class="field name-field"><label>姓名 <a href="https://www.boca.gov.tw/sp-natr-singleform-1.html" target="_blank" rel="noopener" class="hint hint-link">姓名翻譯 ↗</a></label><input type="text" id="fullname" class="name fullname" value="${v.fullname}" placeholder="" /></div>
         <div class="action-stack">
           <button id="snap" class="btn-secondary" title="存圖">存圖</button>
@@ -1477,7 +1524,7 @@
   function render(r, vals){
     const keyInfo = `<div class="key-info">
       <div class="ki-cell row-top">
-        <div class="lab">歲數</div>
+        <div class="lab">${vals.fy ? r.fy + '歲數' : '歲數'}</div>
         <div class="num red-num">${r.age}</div>
       </div>
       <div class="ki-cell row-top">
@@ -1489,15 +1536,15 @@
         <div class="num red-num">${r.conditioning}</div>
       </div>
       <div class="ki-cell row-bot">
-        <div class="lab">${r.fy}流年</div>
+        <div class="lab">${vals.fy ? r.fy + '流年' : '流年'}</div>
         <div class="num">${r.pyThis}</div>
       </div>
       <div class="ki-cell row-bot">
-        <div class="lab">目前高峰</div>
+        <div class="lab">第${['一','二','三','四'][r.currentStage]}高峰</div>
         <div class="num">${r.peaks[r.currentStage]}</div>
       </div>
       <div class="ki-cell row-bot">
-        <div class="lab">目前挑戰</div>
+        <div class="lab">第${['一','二','三','四'][r.currentStage]}挑戰</div>
         <div class="num">${r.challenges[r.currentStage]}</div>
       </div>
     </div>`;
@@ -1530,23 +1577,23 @@
 
     const chart = `<div class="chart">
       <div class="chart-main">
-        <div class="row single">${peakSlot('第四高峰', r.peaks[3], r.stages[3], r.currentStage === 3)}</div>
-        <div class="row single">${peakSlot('第三高峰', r.peaks[2], r.stages[2], r.currentStage === 2)}</div>
+        <div class="row single">${peakSlot('第四高峰', r.peaks[3], r.stages[3], r.currentStage === 3, r.peakSteps[3].steps)}</div>
+        <div class="row single">${peakSlot('第三高峰', r.peaks[2], r.stages[2], r.currentStage === 2, r.peakSteps[2].steps)}</div>
         <div class="row">
-          ${peakSlot('第一高峰', r.peaks[0], r.stages[0], r.currentStage === 0)}
-          ${peakSlot('第二高峰', r.peaks[1], r.stages[1], r.currentStage === 1)}
+          ${peakSlot('第一高峰', r.peaks[0], r.stages[0], r.currentStage === 0, r.peakSteps[0].steps)}
+          ${peakSlot('第二高峰', r.peaks[1], r.stages[1], r.currentStage === 1, r.peakSteps[1].steps)}
         </div>
         <div class="row center-row">
-          <div class="slot center"><div class="lbl-tc">月</div><div class="val-raw">${r.m}</div><div class="reduction">${reductionRest(r.rmSteps.steps)}</div></div>
-          <div class="slot center"><div class="lbl-tc">日</div><div class="val-raw">${r.d}</div><div class="reduction">${reductionRest(r.rdSteps.steps)}</div></div>
-          <div class="slot center"><div class="lbl-tc">年</div><div class="val-raw">${r.y}</div><div class="reduction">${reductionRest(r.rySteps.steps)}</div></div>
+          <div class="slot center"><div class="lbl-tc">月</div><div class="reduction">${reductionRest(r.rmSteps.steps)}</div><div class="val-final">${r.rmSteps.final}</div><div class="raw-birth">${r.m}</div></div>
+          <div class="slot center"><div class="lbl-tc">日</div><div class="reduction">${reductionRest(r.rdSteps.steps)}</div><div class="val-final">${r.rdSteps.final}</div><div class="raw-birth">${r.d}</div></div>
+          <div class="slot center"><div class="lbl-tc">年</div><div class="reduction">${reductionRest(r.rySteps.steps)}</div><div class="val-final">${r.rySteps.final}</div><div class="raw-birth">${r.y}</div></div>
         </div>
         <div class="row">
-          ${challengeSlot('第一挑戰', r.challenges[0], r.stages[0], r.currentStage === 0)}
-          ${challengeSlot('第二挑戰', r.challenges[1], r.stages[1], r.currentStage === 1)}
+          ${challengeSlot('第一挑戰', r.challenges[0], r.stages[0], r.currentStage === 0, r.challengeSteps[0].steps)}
+          ${challengeSlot('第二挑戰', r.challenges[1], r.stages[1], r.currentStage === 1, r.challengeSteps[1].steps)}
         </div>
-        <div class="row single">${challengeSlot('第三挑戰', r.challenges[2], r.stages[2], r.currentStage === 2)}</div>
-        <div class="row single">${challengeSlot('第四挑戰', r.challenges[3], r.stages[3], r.currentStage === 3)}</div>
+        <div class="row single">${challengeSlot('第三挑戰', r.challenges[2], r.stages[2], r.currentStage === 2, r.challengeSteps[2].steps)}</div>
+        <div class="row single">${challengeSlot('第四挑戰', r.challenges[3], r.stages[3], r.currentStage === 3, r.challengeSteps[3].steps)}</div>
       </div>
     </div>`;
 
@@ -1574,11 +1621,13 @@
 
     const sameYearBand = (r.pyPrev === r.pyThis);
     const bandLegend = sameYearBand
-      ? `<span><span class="sw band-curr"></span>流年 ${r.pyThis}</span>`
-      : `<span><span class="sw band-curr"></span>流年 ${r.pyThis}</span>
-         <span><span class="sw band-prev"></span>流年 ${r.pyPrev}</span>`;
+      ? `<span><span class="sw band-curr"></span>流年 <span class="band-num">${r.pyThis}</span></span>`
+      : `<span><span class="sw band-curr"></span>流年 <span class="band-num">${r.pyThis}</span></span>
+         <span><span class="sw band-prev"></span>流年 <span class="band-num">${r.pyPrev}</span></span>`;
 
-    const startLabelHtml = (r.startThis === r.startPrev)
+    const startLabelHtml = !vals.fy
+      ? `<span class="seg-prev"><span class="band-num">?</span>-<span class="band-num">?</span> 月仍流年<span class="band-num">?</span></span><span class="seg-divider"> · </span><span class="seg-curr"><span class="band-num">?</span> 月起入流年<span class="band-num">?</span></span>`
+      : (r.startThis === r.startPrev)
       ? `<span class="seg-curr">本年流年 ${r.pyThis} 從 ${r.startThis} 月起</span>`
       : `<span class="seg-prev">1-${r.startThis - 1} 月仍流年 ${r.pyPrev}</span><span class="seg-divider"> · </span><span class="seg-curr">${r.startThis} 月起入流年 ${r.pyThis}</span>`;
 
@@ -1628,7 +1677,7 @@
       ${nameSection}
       ${karmaTraitsBlock}
       <div class="month-title-row">
-        <span class="month-title">${r.fy} 流月</span>
+        <span class="month-title">${vals.fy ? r.fy + ' 流月' : '<span class="band-num">?</span> 流月'}</span>
         <span class="month-note">${startLabelHtml}</span>
         <span class="legend">
           <span class="legend-today"><span class="sw today"></span>當月</span>
