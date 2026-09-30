@@ -290,26 +290,93 @@
   /* 名單面板(儲存到本機) */
   .roster-btn {
     position: fixed;
-    bottom: 18px;
-    right: 18px;
+    bottom: 14px;
+    right: 14px;
     z-index: 100;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.95);
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.85);
     border: 1px solid var(--line);
+    color: var(--ink-soft);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     line-height: 1;
     font-family: inherit;
-    box-shadow: 0 3px 12px rgba(15, 30, 58, 0.12);
-    transition: background 0.15s, transform 0.15s;
+    box-shadow: 0 2px 6px rgba(15, 30, 58, 0.06);
+    transition: background 0.15s, opacity 0.15s;
+    opacity: 0.75;
   }
-  .roster-btn:hover { background: var(--accent-bg); transform: scale(1.05); }
+  .roster-btn:hover { background: var(--accent-bg); opacity: 1; }
+
+  /* 提示條:計算後浮出 */
+  .roster-hint {
+    margin: 8px auto 14px;
+    max-width: 620px;
+    padding: 9px 14px;
+    background: var(--accent-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--accent);
+    animation: rh-in 0.3s ease-out;
+  }
+  @keyframes rh-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .roster-hint .rh-text { flex: 1; line-height: 1.4; }
+  .roster-hint .rh-actions { display: flex; gap: 6px; align-items: center; }
+  .roster-hint .rh-save {
+    padding: 4px 12px;
+    height: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #fff;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+  .roster-hint .rh-save:hover { background: var(--accent); color: #fff; }
+  .roster-hint .rh-close {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--ink-dim);
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.6;
+  }
+  .roster-hint .rh-close:hover { opacity: 1; }
+  .roster-hint.inline-input .rh-text { display: none; }
+  .roster-hint.inline-input .rh-actions { flex: 1; }
+  .roster-hint.inline-input .rh-nick-input {
+    flex: 1;
+    padding: 4px 8px;
+    height: 26px;
+    font-size: 12px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    font-family: inherit;
+    background: #fff;
+  }
   .roster-panel {
     position: fixed;
     bottom: 62px;
@@ -1404,7 +1471,7 @@
 </div>
 
 <!-- 名單:儲存到本機 (localStorage) -->
-<button class="roster-btn" id="rosterBtn" title="名單" aria-label="名單">📝</button>
+<button class="roster-btn" id="rosterBtn" title="開啟名單" aria-label="名單">📝 名單</button>
 <div class="roster-panel" id="rosterPanel">
   <div class="roster-header">
     <span class="rp-title">名單</span>
@@ -1837,7 +1904,7 @@
       <div class="timeline"><div class="tl-track">${tlCells}</div></div>
     </div>`;
 
-    return `${topbar()}<div class="layout">${chart}${right}</div>`;
+    return `${topbar()}<div id="rosterHint" class="roster-hint" style="display:none"></div><div class="layout">${chart}${right}</div>`;
   }
 
   function attachHandlers(){
@@ -1884,7 +1951,68 @@
     if ($('fullname')) $('fullname').value = profile.fullname || '';
     if ($('fy')) $('fy').value = TODAY_Y;
     closeRosterPanel();
+    _rosterSuppressHintOnce = true;
     run();
+  }
+  // 提示條狀態(session-scope)
+  let _rosterHintDismissed = false;   // 使用者這個 session 已點過關閉
+  let _rosterSuppressHintOnce = false; // 這次 run() 不要顯示(通常是剛載入舊資料)
+  function _profileMatches(p, y, m, d, fullname){
+    return String(p.y) === String(y) && String(p.m) === String(m) &&
+           String(p.d) === String(d) && (p.fullname || '') === (fullname || '');
+  }
+  function rosterMaybeShowHint(y, m, d, fullname){
+    const hint = document.getElementById('rosterHint');
+    if (!hint) return;
+    if (_rosterSuppressHintOnce) { _rosterSuppressHintOnce = false; hint.style.display = 'none'; return; }
+    if (_rosterHintDismissed) { hint.style.display = 'none'; return; }
+    // 已在名單裡就不提示
+    const inList = loadRoster().some(p => _profileMatches(p, y, m, d, fullname));
+    if (inList) { hint.style.display = 'none'; return; }
+    // 顯示提示
+    hint.className = 'roster-hint';
+    hint.innerHTML = `
+      <span class="rh-text">這個人常查嗎?可以存入名單,下次點一下就載入。</span>
+      <div class="rh-actions">
+        <button class="rh-save" id="rhSaveBtn">★ 存入名單</button>
+        <button class="rh-close" id="rhCloseBtn" title="關閉" aria-label="關閉">✕</button>
+      </div>
+    `;
+    hint.style.display = 'flex';
+    document.getElementById('rhSaveBtn').addEventListener('click', () => _rosterHintPromptNickname(y, m, d, fullname));
+    document.getElementById('rhCloseBtn').addEventListener('click', () => {
+      _rosterHintDismissed = true;
+      hint.style.display = 'none';
+    });
+  }
+  function _rosterHintPromptNickname(y, m, d, fullname){
+    const hint = document.getElementById('rosterHint');
+    if (!hint) return;
+    hint.className = 'roster-hint inline-input';
+    hint.innerHTML = `
+      <div class="rh-actions">
+        <input type="text" class="rh-nick-input" id="rhNickInput" placeholder="幫這個人取個暱稱" maxlength="20" />
+        <button class="rh-save" id="rhConfirm">存入</button>
+        <button class="rh-close" id="rhCancel" title="取消" aria-label="取消">✕</button>
+      </div>
+    `;
+    const nick = document.getElementById('rhNickInput');
+    nick.value = fullname ? fullname.split(/\s+/)[0] : '';
+    nick.focus();
+    nick.select();
+    const doSave = () => {
+      const nickname = nick.value.trim() || '未命名';
+      addProfile(nickname, y, m, d, fullname);
+      hint.className = 'roster-hint';
+      hint.innerHTML = `<span class="rh-text" style="color:var(--vowel)">✓ 已存入名單 · <strong>${nickname}</strong></span>`;
+      setTimeout(() => { hint.style.display = 'none'; }, 1800);
+    };
+    nick.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSave();
+      if (e.key === 'Escape') { hint.style.display = 'none'; }
+    });
+    document.getElementById('rhConfirm').addEventListener('click', doSave);
+    document.getElementById('rhCancel').addEventListener('click', () => { hint.style.display = 'none'; });
   }
   function renderRosterPanel(){
     const list = document.getElementById('rosterList');
@@ -2187,6 +2315,7 @@
     $('out').innerHTML = render(calc(y, m, d, fy, groups), vals);
     document.body.classList.remove('placeholder-mode');
     attachHandlers();
+    if (typeof rosterMaybeShowHint === 'function') rosterMaybeShowHint(yStr, mStr, dStr, fullname);
     if (typeof fitToScreen === 'function') requestAnimationFrame(fitToScreen);
   }
 
