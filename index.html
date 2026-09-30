@@ -366,9 +366,14 @@
   }
   .roster-hint .rh-close:hover { opacity: 1; }
   .roster-hint.inline-input .rh-text { display: none; }
-  .roster-hint.inline-input .rh-actions { flex: 1; }
-  .roster-hint.inline-input .rh-nick-input {
+  .roster-hint.inline-input .rh-actions {
     flex: 1;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .roster-hint.inline-input .rh-nick-input {
+    flex: 1 1 140px;
+    min-width: 0;
     padding: 4px 8px;
     height: 26px;
     font-size: 12px;
@@ -376,6 +381,7 @@
     border-radius: 4px;
     font-family: inherit;
     background: #fff;
+    box-sizing: border-box;
   }
   .roster-panel {
     position: fixed;
