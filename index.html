@@ -998,6 +998,9 @@
     line-height: 1;
   }
   .tl-cell.now .y, .tl-cell.now .v { color: var(--accent-strong); font-weight: 700; }
+  .tl-clickable { cursor: pointer; border-radius: 4px; transition: background 0.12s; }
+  .tl-clickable:hover { background: var(--accent-bg); }
+  .tl-clickable:active { transform: scale(0.97); }
 
   .mini-title {
     font-size: 15px;
@@ -1605,7 +1608,7 @@
     };
   }
 
-  function calc(y, m, d, fy, groups){
+  function calc(y, m, d, fy, groups, timelineAnchorYear){
     const rySteps = reduceWithSteps(y);
     const rmSteps = reduceWithSteps(m);
     const rdSteps = reduceWithSteps(d);
@@ -1651,9 +1654,10 @@
     let age = fy - y;
     if (TODAY_M < m || (TODAY_M === m && TODAY_D < d)) age--;
     const currentStage = (age <= e1) ? 0 : (age <= e2) ? 1 : (age <= e3) ? 2 : 3;
-    // 流年週期:1-9 順序固定,以「當前所屬週期的流年 1 那年」為起點
-    // 找出 fy 所屬週期的起點年(該年的流年值 = 1)
-    let cycleStart = fy;
+    // 流年週期:1-9 順序固定,以「錨點年所屬週期的流年 1 那年」為起點
+    // timelineAnchorYear 用於釘住時間軸,避免點格子切年份時整組重排;未傳就用 fy
+    const anchorY = timelineAnchorYear || fy;
+    let cycleStart = anchorY;
     while (calcPersonalYear(rm, rd, cycleStart) !== 1) {
       cycleStart--;
     }
@@ -1837,9 +1841,9 @@
     let tlCells = '';
     for (const t of r.timeline) {
       const isNow = (t.year === r.fy);
-      let cls = 'tl-cell';
+      let cls = 'tl-cell tl-clickable';
       if (isNow) cls += ' now';
-      tlCells += `<div class="${cls}"><div class="y">${t.year}</div><div class="v">${t.py}</div></div>`;
+      tlCells += `<div class="${cls}" data-year="${t.year}" title="切換到 ${t.year} 年"><div class="y">${t.year}</div><div class="v">${t.py}</div></div>`;
     }
 
     const sameYearBand = (r.pyPrev === r.pyThis);
@@ -1925,6 +1929,19 @@
     });
     const snapBtn = document.getElementById('snap');
     if (snapBtn) snapBtn.addEventListener('click', takeSnapshot);
+    // timeline 格子點擊 → 切換查詢年份,但時間軸錨點不動
+    document.querySelectorAll('.tl-clickable').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const yr = cell.dataset.year;
+        if (!yr) return;
+        const fyInput = document.getElementById('fy');
+        if (fyInput) {
+          fyInput.value = yr;
+          _rosterSuppressHintOnce = true;
+          run({ keepAnchor: true });
+        }
+      });
+    });
   }
 
   // === 名單:localStorage 儲存/讀取多筆 ===
@@ -2301,12 +2318,20 @@
     return { groups: parts };
   }
 
-  function run(){
+  // 時間軸錨點:按計算 / 載入舊資料時更新;點格子切年份時不動
+  let _timelineAnchor = null;
+  function run(opts){
+    opts = opts || {};
     const yStr = $('y') ? $('y').value : '';
     const mStr = $('m') ? $('m').value : '';
     const dStr = $('d') ? $('d').value : '';
-    const fyStr = $('fy') ? $('fy').value : '';
+    let fyStr = $('fy') ? $('fy').value : '';
     const fullname = $('fullname') ? $('fullname').value : '';
+    // 查詢年份空的 → 預設今年並寫回 input
+    if (!fyStr && (yStr || mStr || dStr)) {
+      fyStr = String(TODAY_Y);
+      if ($('fy')) $('fy').value = fyStr;
+    }
     const y = +yStr, m = +mStr, d = +dStr, fy = +fyStr;
     const full = fullname.trim();
     const { groups } = splitName(full);
@@ -2320,7 +2345,9 @@
     if (m < 1 || m > 12 || d < 1 || d > 31) {
       $('out').innerHTML = '<div class="empty">月份或日期超出範圍</div>'; return;
     }
-    $('out').innerHTML = render(calc(y, m, d, fy, groups), vals);
+    // keepAnchor: 點時間軸格子時,沿用上次的錨點;否則用當前 fy 設新錨點
+    if (!opts.keepAnchor || _timelineAnchor == null) _timelineAnchor = fy;
+    $('out').innerHTML = render(calc(y, m, d, fy, groups, _timelineAnchor), vals);
     document.body.classList.remove('placeholder-mode');
     attachHandlers();
     if (typeof rosterMaybeShowHint === 'function') rosterMaybeShowHint(yStr, mStr, dStr, fullname);
