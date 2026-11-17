@@ -1618,12 +1618,9 @@
     const allSum = letters.reduce((a, l) => a + l.val, 0);
     const vowelSum = letters.filter(l => l.isVowel).reduce((a, l) => a + l.val, 0);
     const consonantSum = letters.filter(l => !l.isVowel).reduce((a, l) => a + l.val, 0);
+    const Esteps = reduceWithSteps(allSum);
     const Ssteps = reduceWithSteps(vowelSum);
     const Psteps = reduceWithSteps(consonantSum);
-    // E 表現 = 化約後的 S + 化約後的 P → 再化約
-    // 讓 E 的推導鏈反映 S+P 關係(S/P 的大師數會透過各自的 chain 保留;
-    //   全字母原始總和的大師數可能不會出現在 E 鏈中)
-    const Esteps = reduceWithSteps(Ssteps.final + Psteps.final);
     const Msteps = reduceWithSteps(Esteps.final + lifePath);
 
     // 業的圖表:1-9 數字統計
@@ -1835,7 +1832,7 @@
           ${keyInfo}
           <div class="col-divider"></div>
           <div class="name-grid">
-            <div class="name-item"><span class="nlbl"><span class="nltr">Ｅ</span> · 表現</span><span class="nval">${nn.E}</span><span class="nformula">${nn.S}+${nn.P}=${stepsToStr(nn.Esteps.steps)}</span><span class="nsub">工作</span></div>
+            <div class="name-item"><span class="nlbl"><span class="nltr">Ｅ</span> · 表現</span><span class="nval">${nn.E}</span><span class="nformula">${stepsToStr(nn.Esteps.steps)}</span><span class="nsub">工作</span></div>
             <div class="name-item"><span class="nlbl"><span class="nltr">Ｓ</span> · 靈驅</span><span class="nval">${nn.S}</span><span class="nformula">${stepsToStr(nn.Ssteps.steps)}</span><span class="nsub">親密</span></div>
             <div class="name-item"><span class="nlbl"><span class="nltr">Ｐ</span> · 人格</span><span class="nval">${nn.P}</span><span class="nformula">${stepsToStr(nn.Psteps.steps)}</span><span class="nsub">社交</span></div>
             <div class="name-item"><span class="nlbl"><span class="nltr">Ｍ</span> · 成熟</span><span class="nval">${nn.M}</span><span class="nformula">${nn.E}+${r.lifePath}=${stepsToStr(nn.Msteps.steps)}</span><span class="nsub">36歲後</span></div>
