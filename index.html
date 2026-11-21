@@ -455,6 +455,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .roster-item .ri-sub {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    word-break: break-word;
+  }
   .roster-item .ri-edit,
   .roster-item .ri-del {
     width: 24px;
@@ -590,6 +598,36 @@
     text-underline-offset: 2px;
   }
   .field.name-field label { position: relative; }
+  /* 載入名單時的大字暱稱標示 */
+  .loaded-nick-header {
+    font-family: var(--serif-tc);
+    font-size: 30px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--vowel);
+    letter-spacing: 0.4em;
+    padding: 14px 0 10px;
+    margin: 0 0 6px;
+    border-bottom: 1px solid var(--line-soft);
+    line-height: 1.2;
+  }
+  .loaded-nick-header:empty { display: none; }
+  .loaded-nick-header::before {
+    content: '目前查看';
+    display: block;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.4em;
+    margin-bottom: 4px;
+    font-weight: 400;
+  }
+  @media (max-width: 760px) {
+    .loaded-nick-header {
+      font-size: 24px;
+      padding: 10px 0 8px;
+      letter-spacing: 0.3em;
+    }
+  }
   .field input {
     background: transparent;
     border: none;
@@ -1980,16 +2018,23 @@
       <div class="timeline"><div class="tl-track">${tlCells}</div></div>
     </div>`;
 
-    return `${topbar()}<div id="rosterHint" class="roster-hint" style="display:none"></div><div class="layout">${chart}${right}</div>`;
+    return `${topbar()}<div id="rosterHint" class="roster-hint" style="display:none"></div><div id="loadedNick" class="loaded-nick-header"></div><div class="layout">${chart}${right}</div>`;
   }
 
   function attachHandlers(){
+    // 剛由 loadProfileToForm 設定的暱稱,塞進剛 render 出來的 badge
+    _applyLoadedNicknameBadge();
     const calcBtn = document.getElementById('calc');
     if (!calcBtn) return;
     calcBtn.addEventListener('click', run);
     ['y','m','d','fy','fullname'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+    });
+    // 手動改任一欄位 → 清掉「目前載入」的暱稱 badge(避免誤導)
+    ['y','m','d','fullname'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', _clearLoadedNicknameBadge);
     });
     const snapBtn = document.getElementById('snap');
     if (snapBtn) snapBtn.addEventListener('click', takeSnapshot);
@@ -2049,7 +2094,19 @@
     if ($('fy')) $('fy').value = TODAY_Y;
     closeRosterPanel();
     _rosterSuppressHintOnce = true;
+    _currentLoadedNickname = profile.nickname || '';
     run();
+  }
+  // 目前載入的名單暱稱 — 持續顯示直到使用者手動改欄位
+  let _currentLoadedNickname = '';
+  function _applyLoadedNicknameBadge(){
+    const badge = document.getElementById('loadedNick');
+    if (badge) badge.textContent = _currentLoadedNickname;
+  }
+  function _clearLoadedNicknameBadge(){
+    _currentLoadedNickname = '';
+    const badge = document.getElementById('loadedNick');
+    if (badge) badge.textContent = '';
   }
   // 提示條狀態(session-scope)
   let _rosterHintDismissed = false;   // 使用者這個 session 已點過關閉
@@ -2125,7 +2182,8 @@
         <div class="roster-item" data-id="${p.id}">
           <div class="ri-info">
             <div class="ri-name">${escapeHtml(p.nickname)}</div>
-            <div class="ri-meta">${p.y}/${p.m}/${p.d}${p.fullname ? ' · ' + escapeHtml(p.fullname) : ''}</div>
+            <div class="ri-meta">${p.y}/${p.m}/${p.d}</div>
+            ${p.fullname ? `<div class="ri-sub">${escapeHtml(p.fullname)}</div>` : ''}
           </div>
           <button class="ri-edit" data-id="${p.id}" title="編輯" aria-label="編輯">✎</button>
           <button class="ri-del" data-id="${p.id}" title="刪除" aria-label="刪除">✕</button>
