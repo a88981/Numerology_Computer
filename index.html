@@ -174,13 +174,26 @@
     font-weight: 700;
     color: var(--vowel);
   }
+  body.placeholder-mode .lifepath-sum .lp-formula,
+  body.placeholder-mode .lifepath-sum .lp-formula .lp-in,
+  body.placeholder-mode .lifepath-sum .lp-formula .lp-mid,
+  body.placeholder-mode .lifepath-sum .lp-formula .lp-arrow,
+  body.placeholder-mode .lifepath-sum .lp-formula .lp-final {
+    color: transparent !important;
+  }
   body.placeholder-mode .lifepath-sum .lp-formula {
-    color: transparent;
+    position: relative;
   }
   body.placeholder-mode .lifepath-sum .lp-formula::after {
     content: '✦ + ✦ + ✦ → ✦';
     color: var(--ink-dimmer);
     font-weight: 500;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.1em;
   }
   .slot {
     text-align: center;
