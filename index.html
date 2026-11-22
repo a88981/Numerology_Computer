@@ -598,35 +598,70 @@
     text-underline-offset: 2px;
   }
   .field.name-field label { position: relative; }
-  /* 載入名單時的大字暱稱標示 */
-  .loaded-nick-header {
+  /* 命盤名字區塊 — 大字輸入欄 + 旁邊「存入名單」按鈕 */
+  .chart-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 700px;
+    margin: 12px auto 12px;
+    padding: 4px 16px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    gap: 10px;
+    transition: border-color 0.18s;
+  }
+  .chart-name-row:focus-within { border-bottom-color: var(--vowel); }
+  .chart-name-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 4px 0 2px;
     font-family: var(--serif-tc);
     font-size: 30px;
     font-weight: 500;
-    text-align: center;
     color: var(--vowel);
     letter-spacing: 0.4em;
-    padding: 14px 0 10px;
-    margin: 0 0 6px;
-    border-bottom: 1px solid var(--line-soft);
+    text-align: center;
     line-height: 1.2;
   }
-  .loaded-nick-header:empty { display: none; }
-  .loaded-nick-header::before {
-    content: '目前查看';
-    display: block;
-    font-size: 10px;
-    color: var(--ink-dim);
-    letter-spacing: 0.4em;
-    margin-bottom: 4px;
+  .chart-name-input::placeholder {
+    color: var(--ink-dimmer);
     font-weight: 400;
+    letter-spacing: 0.18em;
+    font-size: 14px;
+    opacity: 0.8;
+  }
+  .chart-name-save {
+    flex: 0 0 auto;
+    font-family: var(--serif-tc);
+    font-size: 11px;
+    padding: 6px 12px;
+    border: 1px solid rgba(183, 56, 76, 0.4);
+    color: var(--vowel);
+    background: transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    letter-spacing: 0.2em;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .chart-name-save:hover { background: rgba(183, 56, 76, 0.08); }
+  .chart-name-save.saved {
+    background: var(--vowel);
+    color: #fff;
+    border-color: var(--vowel);
   }
   @media (max-width: 760px) {
-    .loaded-nick-header {
+    .chart-name-row { padding: 2px 10px 8px; gap: 8px; }
+    .chart-name-input {
       font-size: 24px;
-      padding: 10px 0 8px;
       letter-spacing: 0.3em;
     }
+    .chart-name-input::placeholder { font-size: 12px; letter-spacing: 0.12em; }
+    .chart-name-save { font-size: 10px; padding: 5px 10px; letter-spacing: 0.15em; }
   }
   .field input {
     background: transparent;
@@ -1065,6 +1100,9 @@
     border: 1px solid var(--line);
     background: rgba(255,255,255,0.55);
     padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
   .tl-track {
     display: grid;
@@ -1764,12 +1802,17 @@
       cycleStart--;
     }
     const timeline = [];
-    // 上排:當下週期 9 年(從流年 1 到流年 9)
+    // 第一排:下個週期 9 年(從流年 1 到流年 9)
+    for (let i = 0; i < 9; i++) {
+      const yr = cycleStart + 9 + i;
+      timeline.push({ year: yr, py: calcPersonalYear(rm, rd, yr) });
+    }
+    // 第二排:當下週期 9 年(從流年 1 到流年 9)
     for (let i = 0; i < 9; i++) {
       const yr = cycleStart + i;
       timeline.push({ year: yr, py: calcPersonalYear(rm, rd, yr) });
     }
-    // 下排:前一個週期 9 年
+    // 第三排:上個週期 9 年
     for (let i = 0; i < 9; i++) {
       const yr = cycleStart - 9 + i;
       timeline.push({ year: yr, py: calcPersonalYear(rm, rd, yr) });
@@ -1940,13 +1983,20 @@
       </div>`;
     }
 
-    let tlCells = '';
-    for (const t of r.timeline) {
+    function _tlCell(t){
       const isNow = (t.year === r.fy);
       let cls = 'tl-cell tl-clickable';
       if (isNow) cls += ' now';
-      tlCells += `<div class="${cls}" data-year="${t.year}" title="切換到 ${t.year} 年"><div class="y">${t.year}</div><div class="v">${t.py}</div></div>`;
+      return `<div class="${cls}" data-year="${t.year}" title="切換到 ${t.year} 年"><div class="y">${t.year}</div><div class="v">${t.py}</div></div>`;
     }
+    // timeline 分 3 段:0-8 = 下個 9 年、9-17 = 當下 9 年、18-26 = 上個 9 年
+    let tlCells = '<div class="tl-track tl-future">';
+    for (let i = 0; i < 9; i++) tlCells += _tlCell(r.timeline[i]);
+    tlCells += '</div><div class="tl-track tl-current">';
+    for (let i = 9; i < 18; i++) tlCells += _tlCell(r.timeline[i]);
+    tlCells += '</div><div class="tl-track tl-past">';
+    for (let i = 18; i < 27; i++) tlCells += _tlCell(r.timeline[i]);
+    tlCells += '</div>';
 
     const sameYearBand = (r.pyPrev === r.pyThis);
     const bandLegend = sameYearBand
@@ -2014,28 +2064,29 @@
         </span>
       </div>
       <div class="month-grid">${monthCells}</div>
-      <div class="mini-title">個人年 <span class="mt-py">${r.pyThis}</span> 週期 · <span class="mt-range">${r.timeline[9].year} → ${r.timeline[8].year}</span></div>
-      <div class="timeline"><div class="tl-track">${tlCells}</div></div>
+      <div class="mini-title">個人年 <span class="mt-py">${r.pyThis}</span> 週期 · <span class="mt-range">${r.timeline[18].year} → ${r.timeline[8].year}</span></div>
+      <div class="timeline">${tlCells}</div>
     </div>`;
 
-    return `${topbar()}<div id="rosterHint" class="roster-hint" style="display:none"></div><div id="loadedNick" class="loaded-nick-header"></div><div class="layout">${chart}${right}</div>`;
+    const chartNameVal = escapeHtml(vals && vals.chartName ? vals.chartName : '');
+    return `${topbar()}<div id="rosterHint" class="roster-hint" style="display:none"></div>
+<div class="chart-name-row">
+  <input type="text" id="chartName" class="chart-name-input" placeholder="幫這個命盤取個名字(例:自己、媽、小玩…)" maxlength="20" value="${chartNameVal}" />
+  <button type="button" id="chartNameSave" class="chart-name-save" title="存入名單">存入名單</button>
+</div>
+<div class="layout">${chart}${right}</div>`;
   }
 
   function attachHandlers(){
-    // 剛由 loadProfileToForm 設定的暱稱,塞進剛 render 出來的 badge
-    _applyLoadedNicknameBadge();
     const calcBtn = document.getElementById('calc');
     if (!calcBtn) return;
     calcBtn.addEventListener('click', run);
-    ['y','m','d','fy','fullname'].forEach(id => {
+    ['y','m','d','fy','fullname','chartName'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
     });
-    // 手動改任一欄位 → 清掉「目前載入」的暱稱 badge(避免誤導)
-    ['y','m','d','fullname'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', _clearLoadedNicknameBadge);
-    });
+    const chartNameSaveBtn = document.getElementById('chartNameSave');
+    if (chartNameSaveBtn) chartNameSaveBtn.addEventListener('click', quickSaveChart);
     const snapBtn = document.getElementById('snap');
     if (snapBtn) snapBtn.addEventListener('click', takeSnapshot);
     // timeline 格子點擊 → 切換查詢年份,但時間軸錨點不動
@@ -2091,22 +2142,11 @@
     if ($('m')) $('m').value = profile.m || '';
     if ($('d')) $('d').value = profile.d || '';
     if ($('fullname')) $('fullname').value = profile.fullname || '';
+    if ($('chartName')) $('chartName').value = profile.nickname || '';
     if ($('fy')) $('fy').value = TODAY_Y;
     closeRosterPanel();
     _rosterSuppressHintOnce = true;
-    _currentLoadedNickname = profile.nickname || '';
     run();
-  }
-  // 目前載入的名單暱稱 — 持續顯示直到使用者手動改欄位
-  let _currentLoadedNickname = '';
-  function _applyLoadedNicknameBadge(){
-    const badge = document.getElementById('loadedNick');
-    if (badge) badge.textContent = _currentLoadedNickname;
-  }
-  function _clearLoadedNicknameBadge(){
-    _currentLoadedNickname = '';
-    const badge = document.getElementById('loadedNick');
-    if (badge) badge.textContent = '';
   }
   // 提示條狀態(session-scope)
   let _rosterHintDismissed = false;   // 使用者這個 session 已點過關閉
@@ -2279,7 +2319,9 @@
     document.getElementById('refSaveBtn').addEventListener('click', doUpdate);
     document.getElementById('refCancelBtn').addEventListener('click', renderRosterPanel);
   }
-  function promptSaveCurrent(){
+  function quickSaveChart(){
+    // 主畫面的「存入名單」按鈕 — 直接用命盤名字存入,不開面板
+    const chartName = $('chartName') ? $('chartName').value.trim() : '';
     const y = $('y') ? $('y').value.trim() : '';
     const m = $('m') ? $('m').value.trim() : '';
     const d = $('d') ? $('d').value.trim() : '';
@@ -2288,6 +2330,50 @@
       alert('請先填入完整的出生年月日');
       return;
     }
+    if (!chartName) {
+      alert('先幫這個命盤取個名字(例:自己、媽、小玩)');
+      const ci = $('chartName');
+      if (ci) ci.focus();
+      return;
+    }
+    // 若名單已有相同資料就不重複存
+    const existing = loadRoster().find(p => _profileMatches(p, y, m, d, fullname));
+    const btn = document.getElementById('chartNameSave');
+    if (existing) {
+      if (btn) _flashSaveBtn(btn, '已在名單 ✓');
+      return;
+    }
+    addProfile(chartName, y, m, d, fullname);
+    if (btn) _flashSaveBtn(btn, '已存入 ✓');
+  }
+  function _flashSaveBtn(btn, msg){
+    const orig = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('saved');
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('saved');
+      btn.disabled = false;
+    }, 1800);
+  }
+  function promptSaveCurrent(){
+    const y = $('y') ? $('y').value.trim() : '';
+    const m = $('m') ? $('m').value.trim() : '';
+    const d = $('d') ? $('d').value.trim() : '';
+    const fullname = $('fullname') ? $('fullname').value.trim() : '';
+    const chartName = $('chartName') ? $('chartName').value.trim() : '';
+    if (!y || !m || !d) {
+      alert('請先填入完整的出生年月日');
+      return;
+    }
+    // 命盤名字已填 → 直接用它當暱稱存入,不再彈輸入框
+    if (chartName) {
+      addProfile(chartName, y, m, d, fullname);
+      renderRosterPanel();
+      return;
+    }
+    // 命盤名字未填 → 彈輸入框請使用者命名
     const footer = document.getElementById('rosterFooter');
     if (!footer) return;
     footer.innerHTML = `
@@ -2299,12 +2385,13 @@
     `;
     const nickInput = document.getElementById('rosterNickname');
     nickInput.focus();
-    // 預設用姓名或「未命名」
     nickInput.value = fullname ? fullname.split(/\s+/)[0] : '';
     nickInput.select();
     const doSave = () => {
       const nick = nickInput.value.trim() || '未命名';
       addProfile(nick, y, m, d, fullname);
+      // 把剛輸入的暱稱也填回主畫面的「命盤名字」欄
+      if ($('chartName')) $('chartName').value = nick;
       renderRosterPanel();
     };
     nickInput.addEventListener('keydown', e => {
@@ -2365,10 +2452,14 @@
     snapBtn.disabled = true;
     const snapOpacity = snapBtn.style.opacity;
     snapBtn.style.opacity = '0';
+    // 存入名單按鈕也一起隱藏(不要跟著入圖)
+    const chartNameSaveBtn = document.getElementById('chartNameSave');
+    const chartNameSaveOpacity = chartNameSaveBtn ? chartNameSaveBtn.style.opacity : '';
+    if (chartNameSaveBtn) chartNameSaveBtn.style.opacity = '0';
 
     // html2canvas 對 <input> 渲染不準(寬度抓錯、文字偏移)
     // 替代方案:截圖前把每個 input 用 div 取代,截完還原
-    const inputs = Array.from(document.querySelectorAll('.controls input'));
+    const inputs = Array.from(document.querySelectorAll('.controls input, #chartName'));
     const replacements = inputs.map(input => {
       const cs = getComputedStyle(input);
       const div = document.createElement('div');
@@ -2456,9 +2547,11 @@
       console.log('[snap] canvas done, size:', canvas.width, 'x', canvas.height);
 
       // 下載 — 用 Blob 比 dataURL 更穩(處理大圖、跨瀏覽器)
-      const fullname = (document.getElementById('fullname')?.value || 'numerology').trim().replace(/[\s,]+/g, '_');
+      const chartName = (document.getElementById('chartName')?.value || '').trim().replace(/[\s,]+/g, '_');
+      const fullname = (document.getElementById('fullname')?.value || '').trim().replace(/[\s,]+/g, '_');
       const fy = document.getElementById('fy')?.value || '';
-      const filename = `numerology_${fullname || 'demo'}_${fy || 'now'}.png`;
+      const labelPart = chartName || fullname || 'demo';
+      const filename = `numerology_${labelPart}_${fy || 'now'}.png`;
       canvas.toBlob((blob) => {
         if (!blob) {
           alert('截圖失敗:無法產生圖片');
@@ -2486,6 +2579,7 @@
       snapBtn.style.opacity = snapOpacity;
       snapBtn.textContent = originalText;
       snapBtn.disabled = false;
+      if (chartNameSaveBtn) chartNameSaveBtn.style.opacity = chartNameSaveOpacity;
       // 還原 input
       replacements.forEach(({ input, div }) => {
         input.style.display = '';
@@ -2519,6 +2613,7 @@
     const dStr = $('d') ? $('d').value : '';
     let fyStr = $('fy') ? $('fy').value : '';
     const fullname = $('fullname') ? $('fullname').value : '';
+    const chartName = $('chartName') ? $('chartName').value : '';
     // 查詢年份空的 → 預設今年並寫回 input
     if (!fyStr && (yStr || mStr || dStr)) {
       fyStr = String(TODAY_Y);
@@ -2527,7 +2622,7 @@
     const y = +yStr, m = +mStr, d = +dStr, fy = +fyStr;
     const full = fullname.trim();
     const { groups } = splitName(full);
-    const vals = { y: yStr, m: mStr, d: dStr, fy: fyStr, fullname };
+    const vals = { y: yStr, m: mStr, d: dStr, fy: fyStr, fullname, chartName };
     // 缺值時:保留使用者已輸入的值,只把結果回到 placeholder 視覺
     if (!y || !m || !d || !fy) {
       document.body.classList.add('placeholder-mode');
@@ -2542,7 +2637,8 @@
     $('out').innerHTML = render(calc(y, m, d, fy, groups, _timelineAnchor), vals);
     document.body.classList.remove('placeholder-mode');
     attachHandlers();
-    if (typeof rosterMaybeShowHint === 'function') rosterMaybeShowHint(yStr, mStr, dStr, fullname);
+    // 註:原本會呼叫 rosterMaybeShowHint 跳出存入名單提示條,
+    // 已由主畫面的「命盤名字」輸入欄 + 右下「名單」按鈕取代。
     if (typeof fitToScreen === 'function') requestAnimationFrame(fitToScreen);
   }
 
