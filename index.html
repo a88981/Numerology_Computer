@@ -1424,12 +1424,13 @@
   body.placeholder-mode .bar.zero { border-bottom: 1px dashed var(--line); }
 
   /* 存圖模式:把互動用的按鈕藏起來,命盤名字放大置中,給靜態分享用 */
-  body.snapshot-mode #snap,
-  body.snapshot-mode #calc,
-  body.snapshot-mode #chartNameSave,
-  body.snapshot-mode .action-stack,
   body.snapshot-mode .roster-btn,
-  body.snapshot-mode .roster-hint { display: none !important; }
+  body.snapshot-mode .roster-hint,
+  body.snapshot-mode #chartNameSave { display: none !important; }
+  /* action-stack(存圖+計算)用 visibility 隱藏,保留 grid 欄位避免姓名欄變寬超線 */
+  body.snapshot-mode .action-stack,
+  body.snapshot-mode #snap,
+  body.snapshot-mode #calc { visibility: hidden !important; }
   body.snapshot-mode .chart-name-row {
     justify-content: center;
     max-width: 100%;
@@ -2664,28 +2665,26 @@
       if (isMobile) {
         // html2canvas 用 windowWidth 1200 模擬桌機 viewport,讓 @media 重算
         opts.windowWidth = 1200;
-        opts.windowHeight = 2000;
+        // windowHeight 要夠大才能容納完整內容(有些命盤超過 2000 CSS px)
+        opts.windowHeight = 4000;
         // 在 clone 上量真實桌機版尺寸,稍後用來裁切 canvas
         let measuredW = 1200, measuredH = 1000;
         opts.onclone = (clonedDoc) => {
-          // 量桌機版下實際內容(header + layout)所需高度
-          const clonedHeader = clonedDoc.querySelector('.header');
-          const clonedLayout = clonedDoc.querySelector('.layout');
           const clonedWrap = clonedDoc.querySelector('.wrap');
-          if (clonedLayout && clonedWrap) {
-            const headerH = clonedHeader ? clonedHeader.offsetHeight : 0;
-            const layoutH = clonedLayout.offsetHeight;
-            // .layout 有 zoom: 1.1 讓實際渲染高度 > offsetHeight,
-            //   html2canvas 對 zoom 處理不一致,要把 zoom 係數乘回去避免底部被裁。
-            const layoutCs = clonedDoc.defaultView ? clonedDoc.defaultView.getComputedStyle(clonedLayout) : null;
-            const layoutZoom = layoutCs ? (parseFloat(layoutCs.zoom) || 1) : 1.1;
-            // wrap padding 上下
-            const cs = clonedDoc.defaultView ? clonedDoc.defaultView.getComputedStyle(clonedWrap) : null;
-            const padTop = cs ? parseInt(cs.paddingTop) || 0 : 14;
-            const padBot = cs ? parseInt(cs.paddingBottom) || 0 : 30;
-            measuredW = clonedWrap.offsetWidth || 1200;
-            // 加 80px 安全邊距,避免最下面一行(年份註記/timeline 末尾)被切
-            measuredH = headerH + Math.ceil(layoutH * layoutZoom) + padTop + padBot + 80;
+          const clonedLayout = clonedDoc.querySelector('.layout');
+          if (!clonedWrap) return;
+          measuredW = clonedWrap.offsetWidth || 1200;
+          // 用 .layout 的實際 bottom 座標(getBoundingClientRect 會自動含 zoom)
+          // 相對於 wrap 的位置當內容末端,再加 wrap 下方 padding + 60px 安全邊距。
+          const wrapRect = clonedWrap.getBoundingClientRect();
+          const cs = clonedDoc.defaultView ? clonedDoc.defaultView.getComputedStyle(clonedWrap) : null;
+          const padBot = cs ? parseInt(cs.paddingBottom) || 0 : 30;
+          if (clonedLayout) {
+            const layoutRect = clonedLayout.getBoundingClientRect();
+            const layoutBottomInWrap = layoutRect.bottom - wrapRect.top;
+            measuredH = Math.ceil(layoutBottomInWrap) + padBot + 60;
+          } else {
+            measuredH = clonedWrap.scrollHeight + 60;
           }
         };
         const fullCanvas = await html2canvas(target, opts);
