@@ -1422,6 +1422,27 @@
   body.placeholder-mode .bar { background: transparent; border: none; height: 1px !important; }
   body.placeholder-mode .bar .bar-count { visibility: hidden; }
   body.placeholder-mode .bar.zero { border-bottom: 1px dashed var(--line); }
+
+  /* 存圖模式:把互動用的按鈕藏起來,命盤名字放大置中,給靜態分享用 */
+  body.snapshot-mode #snap,
+  body.snapshot-mode #calc,
+  body.snapshot-mode #chartNameSave,
+  body.snapshot-mode .action-stack,
+  body.snapshot-mode .roster-btn,
+  body.snapshot-mode .roster-hint { display: none !important; }
+  body.snapshot-mode .chart-name-row {
+    justify-content: center;
+    max-width: 100%;
+    padding-top: 8px;
+    padding-bottom: 16px;
+  }
+  body.snapshot-mode .chart-name-input {
+    font-size: 48px !important;
+    text-align: center !important;
+    width: 100% !important;
+    letter-spacing: 0.5em !important;
+    padding-bottom: 8px !important;
+  }
   body.placeholder-mode .trait-row .tval { color: transparent !important; position: relative; }
   body.placeholder-mode .trait-row .tval::after {
     content: '✦';
@@ -2592,12 +2613,8 @@
     const originalText = snapBtn.textContent;
     snapBtn.textContent = '產生中...';
     snapBtn.disabled = true;
-    const snapOpacity = snapBtn.style.opacity;
-    snapBtn.style.opacity = '0';
-    // 存入名單按鈕也一起隱藏(不要跟著入圖)
-    const chartNameSaveBtn = document.getElementById('chartNameSave');
-    const chartNameSaveOpacity = chartNameSaveBtn ? chartNameSaveBtn.style.opacity : '';
-    if (chartNameSaveBtn) chartNameSaveBtn.style.opacity = '0';
+    // 進入「存圖模式」:藏掉所有互動按鈕、放大命盤名字
+    document.body.classList.add('snapshot-mode');
 
     // html2canvas 對 <input> 渲染不準(寬度抓錯、文字偏移)
     // 替代方案:截圖前把每個 input 用 div 取代,截完還原
@@ -2723,10 +2740,9 @@
       console.error('[snap] error:', err);
       alert('截圖失敗:' + err.message);
     } finally {
-      snapBtn.style.opacity = snapOpacity;
+      document.body.classList.remove('snapshot-mode');
       snapBtn.textContent = originalText;
       snapBtn.disabled = false;
-      if (chartNameSaveBtn) chartNameSaveBtn.style.opacity = chartNameSaveOpacity;
       // 還原 input
       replacements.forEach(({ input, div }) => {
         input.style.display = '';
