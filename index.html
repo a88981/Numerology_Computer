@@ -123,10 +123,56 @@
   .row.center-row .slot:nth-child(2) { grid-column: 3; }
   .row.center-row .slot:nth-child(3) { grid-column: 5; }
   .row.center-row {
-    padding: 16px 0;
+    padding: 16px 0 10px;
     border-top: 1px solid var(--line);
+    margin: 4px 0 0;
+  }
+  /* 生命道路加總式(月+日+年 → 生命道路) */
+  .row.lifepath-row {
+    display: block;
+    text-align: center;
+    padding: 4px 0 12px;
     border-bottom: 1px solid var(--line);
-    margin: 4px 0;
+    margin: 0 0 4px;
+  }
+  .lifepath-sum .lp-lbl {
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.3em;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .lifepath-sum .lp-formula {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .lifepath-sum .lp-in {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .lifepath-sum .lp-mid {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .lifepath-sum .lp-arrow {
+    color: var(--ink-dimmer);
+    margin: 0 4px;
+  }
+  .lifepath-sum .lp-final {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--vowel);
+  }
+  body.placeholder-mode .lifepath-sum .lp-formula {
+    color: transparent;
+  }
+  body.placeholder-mode .lifepath-sum .lp-formula::after {
+    content: '✦ + ✦ + ✦ → ✦';
+    color: var(--ink-dimmer);
+    font-weight: 500;
   }
   .slot {
     text-align: center;
@@ -1707,6 +1753,19 @@
   }
   function stepsToStr(steps){ return steps.join('→'); }
 
+  // 生命道路加總式:月 + 日 + 年 → 化約 → 生命道路(藍色輸入 → 紅色結果)
+  function lifepathFormulaHTML(r){
+    const sum = r.rmSteps.final + r.rdSteps.final + r.rySteps.final;
+    const steps = reduceWithSteps(sum).steps;
+    let html = `<span class="lp-in">${r.rmSteps.final}</span> + <span class="lp-in">${r.rdSteps.final}</span> + <span class="lp-in">${r.rySteps.final}</span> <span class="lp-arrow">=</span> `;
+    for (let i = 0; i < steps.length; i++) {
+      if (i > 0) html += '<span class="lp-arrow">→</span>';
+      if (i === steps.length - 1) html += `<span class="lp-final">${steps[i]}</span>`;
+      else html += `<span class="lp-mid">${steps[i]}</span>`;
+    }
+    return html;
+  }
+
   const startMonth = py => 10 - py;
 
   function ageNow(y, m, d){
@@ -1983,6 +2042,12 @@
           <div class="slot center"><div class="lbl-tc">月</div><div class="reduction">${reductionRest(r.rmSteps.steps)}</div><div class="val-final">${r.rmSteps.final}</div><div class="raw-birth">${r.m}</div></div>
           <div class="slot center"><div class="lbl-tc">日</div><div class="reduction">${reductionRest(r.rdSteps.steps)}</div><div class="val-final">${r.rdSteps.final}</div><div class="raw-birth">${r.d}</div></div>
           <div class="slot center"><div class="lbl-tc">年</div><div class="reduction">${reductionRest(r.rySteps.steps)}</div><div class="val-final">${r.rySteps.final}</div><div class="raw-birth">${r.y}</div></div>
+        </div>
+        <div class="row lifepath-row">
+          <div class="lifepath-sum">
+            <div class="lp-lbl">生 命 道 路</div>
+            <div class="lp-formula">${lifepathFormulaHTML(r)}</div>
+          </div>
         </div>
         <div class="row">
           ${challengeSlot('第一挑戰', r.challenges[0], r.stages[0], r.currentStage === 0, r.challengeSteps[0].steps)}
