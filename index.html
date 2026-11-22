@@ -655,13 +655,22 @@
     border-color: var(--vowel);
   }
   @media (max-width: 760px) {
-    .chart-name-row { padding: 2px 10px 8px; gap: 8px; }
+    .chart-name-row { padding: 2px 10px 8px; gap: 8px; max-width: 100%; }
     .chart-name-input {
       font-size: 24px;
       letter-spacing: 0.3em;
     }
     .chart-name-input::placeholder { font-size: 12px; letter-spacing: 0.12em; }
     .chart-name-save { font-size: 10px; padding: 5px 10px; letter-spacing: 0.15em; }
+  }
+  @media (max-width: 420px) {
+    .chart-name-row {
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+    .chart-name-input { font-size: 22px; width: 100%; }
+    .chart-name-save { align-self: center; }
   }
   .field input {
     background: transparent;
@@ -2087,6 +2096,12 @@
     });
     const chartNameSaveBtn = document.getElementById('chartNameSave');
     if (chartNameSaveBtn) chartNameSaveBtn.addEventListener('click', quickSaveChart);
+    // 依當下輸入狀態決定按鈕 label(存入名單 / 更新 / 已在名單)
+    _updateChartNameSaveBtn();
+    ['y','m','d','fullname','chartName'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', _updateChartNameSaveBtn);
+    });
     const snapBtn = document.getElementById('snap');
     if (snapBtn) snapBtn.addEventListener('click', takeSnapshot);
     // timeline 格子點擊 → 切換查詢年份,但時間軸錨點不動
@@ -2320,7 +2335,7 @@
     document.getElementById('refCancelBtn').addEventListener('click', renderRosterPanel);
   }
   function quickSaveChart(){
-    // 主畫面的「存入名單」按鈕 — 直接用命盤名字存入,不開面板
+    // 主畫面的「存入名單 / 更新」按鈕
     const chartName = $('chartName') ? $('chartName').value.trim() : '';
     const y = $('y') ? $('y').value.trim() : '';
     const m = $('m') ? $('m').value.trim() : '';
@@ -2336,26 +2351,52 @@
       if (ci) ci.focus();
       return;
     }
-    // 若名單已有相同資料就不重複存
-    const existing = loadRoster().find(p => _profileMatches(p, y, m, d, fullname));
     const btn = document.getElementById('chartNameSave');
+    // 同生日 + 同英文姓名 視為同一個人 → 更新暱稱,不新增
+    const existing = loadRoster().find(p => _profileMatches(p, y, m, d, fullname));
     if (existing) {
-      if (btn) _flashSaveBtn(btn, '已在名單 ✓');
+      if (existing.nickname === chartName) {
+        if (btn) _flashSaveBtn(btn, '已在名單 ✓');
+      } else {
+        updateProfile(existing.id, { nickname: chartName });
+        if (btn) _flashSaveBtn(btn, '已更新 ✓');
+      }
       return;
     }
+    // 新資料 → 新增
     addProfile(chartName, y, m, d, fullname);
     if (btn) _flashSaveBtn(btn, '已存入 ✓');
   }
   function _flashSaveBtn(btn, msg){
-    const orig = btn.textContent;
+    const orig = btn.dataset.baseLabel || btn.textContent;
     btn.textContent = msg;
     btn.classList.add('saved');
     btn.disabled = true;
     setTimeout(() => {
-      btn.textContent = orig;
       btn.classList.remove('saved');
       btn.disabled = false;
+      _updateChartNameSaveBtn(); // 閃完之後重新按當下狀態決定 label
     }, 1800);
+  }
+  function _updateChartNameSaveBtn(){
+    // 按當下輸入狀態決定按鈕文字:「存入名單」/ 「更新」/「已在名單」
+    const btn = document.getElementById('chartNameSave');
+    if (!btn || btn.disabled) return;
+    const chartName = $('chartName') ? $('chartName').value.trim() : '';
+    const y = $('y') ? $('y').value.trim() : '';
+    const m = $('m') ? $('m').value.trim() : '';
+    const d = $('d') ? $('d').value.trim() : '';
+    const fullname = $('fullname') ? $('fullname').value.trim() : '';
+    let label = '存入名單';
+    if (y && m && d) {
+      const existing = loadRoster().find(p => _profileMatches(p, y, m, d, fullname));
+      if (existing) {
+        if (chartName && existing.nickname !== chartName) label = '更新名字';
+        else label = '已在名單';
+      }
+    }
+    btn.textContent = label;
+    btn.dataset.baseLabel = label;
   }
   function promptSaveCurrent(){
     const y = $('y') ? $('y').value.trim() : '';
@@ -2652,8 +2693,10 @@
   function fitToScreen(){
     const wrap = document.querySelector('.wrap');
     if (!wrap) return;
-    const isMobile = window.innerWidth <= 600;
-    if (isMobile) {
+    // 手機、平板直式、Safari「請求電腦版網站」等 viewport 寬度 < 900 的情況
+    // 一律不要套 scale(),交給 CSS 的 mobile media query 或瀏覽器自己的 pinch-zoom 處理
+    const isNarrow = window.innerWidth <= 900;
+    if (isNarrow) {
       wrap.style.transform = '';
       wrap.style.transformOrigin = '';
       document.body.style.height = '';
@@ -2665,14 +2708,17 @@
     const naturalW = wrap.offsetWidth;
     const viewportH = window.innerHeight;
     const viewportW = window.innerWidth;
-    // 高度跟寬度比例都要看,取較小者(避免內容被切到)
     const hRatio = viewportH / naturalH;
     const wRatio = viewportW / naturalW;
-    let ratio = Math.min(hRatio, wRatio, 1); // 不放大,只縮小
-    // 下限 0.7,避免太小看不清
-    ratio = Math.max(ratio, 0.7);
+    let ratio = Math.min(hRatio, wRatio, 1);
+    // 需要縮太多(< 0.85)時乾脆不縮,免得整頁變得又小又卡在中間;交由使用者捲動/縮放
+    if (ratio < 0.85) {
+      wrap.style.transform = '';
+      wrap.style.transformOrigin = '';
+      document.body.style.height = '';
+      return;
+    }
     if (ratio >= 0.99) {
-      // 不需要縮放
       wrap.style.transform = '';
       wrap.style.transformOrigin = '';
       document.body.style.height = '';
@@ -2680,7 +2726,6 @@
     }
     wrap.style.transformOrigin = 'top center';
     wrap.style.transform = `scale(${ratio})`;
-    // 修正:scale 後元素仍佔原本空間,要把 body 高度收回避免下方空白
     document.body.style.height = (naturalH * ratio) + 'px';
   }
   // 初次 + 視窗變化都要重算
