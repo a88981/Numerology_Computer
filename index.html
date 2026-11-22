@@ -2658,12 +2658,17 @@
           if (clonedLayout && clonedWrap) {
             const headerH = clonedHeader ? clonedHeader.offsetHeight : 0;
             const layoutH = clonedLayout.offsetHeight;
+            // .layout 有 zoom: 1.1 讓實際渲染高度 > offsetHeight,
+            //   html2canvas 對 zoom 處理不一致,要把 zoom 係數乘回去避免底部被裁。
+            const layoutCs = clonedDoc.defaultView ? clonedDoc.defaultView.getComputedStyle(clonedLayout) : null;
+            const layoutZoom = layoutCs ? (parseFloat(layoutCs.zoom) || 1) : 1.1;
             // wrap padding 上下
             const cs = clonedDoc.defaultView ? clonedDoc.defaultView.getComputedStyle(clonedWrap) : null;
             const padTop = cs ? parseInt(cs.paddingTop) || 0 : 14;
             const padBot = cs ? parseInt(cs.paddingBottom) || 0 : 30;
             measuredW = clonedWrap.offsetWidth || 1200;
-            measuredH = headerH + layoutH + padTop + padBot;
+            // 加 80px 安全邊距,避免最下面一行(年份註記/timeline 末尾)被切
+            measuredH = headerH + Math.ceil(layoutH * layoutZoom) + padTop + padBot + 80;
           }
         };
         const fullCanvas = await html2canvas(target, opts);
